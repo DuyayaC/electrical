@@ -5,7 +5,6 @@
 #include "chassis_resolution.h"
 #include "motor_data.h"
 #include "alg_pid.h"
-#include "arm_math.h"
 
 typedef enum
 {
@@ -22,3 +21,4 @@ typedef enum
 
 //底盘模式选择，附带对应模式下的任务解算
 extern void chassis_control(float target_vx, float target_vy, float target_omega, float theta, CHASSIS_CONTROL_MODE MODE);
+extern void chassis_init(void);

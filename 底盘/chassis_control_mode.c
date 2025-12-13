@@ -1,11 +1,14 @@
 //==================================================//
 /*****************************************************
- * @brief ╣велтк╤╞©ьжф
- * @author Modi CHIё╗╥ши╚ц╗ц╗м╥ё╘o(║╗ёч╗▄ёч║╗)o
- * @attention х╚оРбжсКбСбж╣велтк╤╞©ьжф╢ЗбКё╛уШ╨одёй╫я║тЯсК
-              тк╤╞©ьжф╡нйЩ╫БкЦрт╪╟╣Г╩З╣ГаВ╥╒км
+ * @brief О©╫О©╫О©╫О©╫О©╫к╤О©╫О©╫О©╫О©╫О©╫
+ * @author Modi CHIО©╫О©╫О©╫О©╫и╚ц╗ц╗м╥О©╫О©╫o(О©╫О©╫О©╫ч╗О©╫О©╫ч║О©╫)o
+ * @attention х╚О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫ж╣О©╫О©╫О©╫О©╫к╤О©╫О©╫О©╫О©╫ф╢О©╫О©╫Кё╛О©╫О©╫О©╫О©╫дёй╫я║О©╫О©╫О©╫О©╫
+              О©╫к╤О©╫О©╫О©╫О©╫ф╡О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫т╪О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫
 *****************************************************/
 //==================================================//
+Class_PID chassis[4];
+
+
 #include "chassis_control_mode.h"
 
 
@@ -31,41 +34,51 @@ void chassis_control(float target_vx, float target_vy, float target_omega, float
     }
 }
 
-//╣велнча╕
+//О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫
 static void chassis_zero_force(void)
 {
-    //╢╚йД╣ГаВж╣0ё╛╣Г╩Знча╕
+    //О©╫О©╫О©╫О©╫О©╫О©╫О©╫ж╣0О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫
     CAN_cmd_chassis(0, 0, 0, 0);
 }
 
-//╣вел╬╡ж╧ё╛╣Г╩ЗкЬ╤╗
+//О©╫О©╫О©╫л╬О©╫ж╧О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫
 static void chassis_static(float target_vx, float target_vy)
 {
-    //╫БкЦ╣велгЩ╤╞╣Г╩Зд©╠Й╫гкы╤х
+    //О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫д©О©╫О©╫О©╫О©╫ы╤О©╫
     chassis_coordinate_resolution(target_vx, target_vy, &chassis_motion);
 
 }
 
-//╣вел╦ЗкФ
+//О©╫О©╫О©╫л╦О©╫О©╫О©╫
 static void chassis_follow(float target_vx, float target_vy)
 {
-    //╫БкЦ╣велгЩ╤╞╣Г╩Зд©╠Й╫гкы╤х
+    //О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫д©О©╫О©╫О©╫О©╫ы╤О©╫
     chassis_coordinate_resolution(target_vx, target_vy, &chassis_motion);
 
 }
 
-//т╜╣ьп║мсбщ
+//т╜О©╫О©╫п║О©╫О©╫О©╫О©╫
 static void chassis_top(float target_omega)
 {
-    //╫БкЦ╣велгЩ╤╞╣Г╩Зд©╠Й╫гкы╤х
+    //О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫д©О©╫О©╫О©╫О©╫ы╤О©╫
     top_stand_still(target_omega, &chassis_motion);
 
 }
 
-//п║мсбщпп╫Ь
+//п║О©╫О©╫О©╫О©╫О©╫п╫О©╫
 static void chassis_top_moving(float target_vx, float target_vy, float target_omega, float theta)
 {
-    //╫БкЦ╣велгЩ╤╞╣Г╩Зд©╠Й╫гкы╤х
+    //О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫д©О©╫О©╫О©╫О©╫ы╤О©╫
     top_moving(target_vx, target_vy, target_omega, theta, &chassis_motion);
 
+}
+
+static void chassis_calculation(void)
+{
+    ;
+}
+
+void chassis_init(void)
+{
+    chassis[0].Init();
 }

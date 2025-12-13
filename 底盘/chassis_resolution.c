@@ -3,34 +3,24 @@
 #if (CHASSIS_TYPE == 'MECANUM')
 static void chassis_wheel_inverse_resolution(chassis_motion_value_t *chassis_motion)
 {
-    chassis_motion->wheel_target_omega[0] = (+chassis_motion->chassis_target_vx - chassis_motion->chassis_target_vy - chassis_motion->chassis_target_omega * (dx + dy)) / WHEEL_RADIUS;
-    chassis_motion->wheel_target_omega[1] = (+chassis_motion->chassis_target_vx + chassis_motion->chassis_target_vy - chassis_motion->chassis_target_omega * (dx + dy)) / WHEEL_RADIUS;
-    chassis_motion->wheel_target_omega[2] = (-chassis_motion->chassis_target_vx + chassis_motion->chassis_target_vy - chassis_motion->chassis_target_omega * (dx + dy)) / WHEEL_RADIUS;
-    chassis_motion->wheel_target_omega[3] = (-chassis_motion->chassis_target_vx - chassis_motion->chassis_target_vy - chassis_motion->chassis_target_omega * (dx + dy)) / WHEEL_RADIUS;
-
-    chassis_motion->motor_target_omega[0] = chassis_motion->wheel_target_omega[0] * GEAR_RATIO;
-    chassis_motion->motor_target_omega[1] = chassis_motion->wheel_target_omega[1] * GEAR_RATIO;
-    chassis_motion->motor_target_omega[2] = chassis_motion->wheel_target_omega[2] * GEAR_RATIO;
-    chassis_motion->motor_target_omega[3] = chassis_motion->wheel_target_omega[3] * GEAR_RATIO;
+    chassis_motion->wheel_target_omega[0] = GEAR_RATIO * (+chassis_motion->chassis_target_vx - chassis_motion->chassis_target_vy - chassis_motion->chassis_target_omega * (dx + dy)) / WHEEL_RADIUS;
+    chassis_motion->wheel_target_omega[1] = GEAR_RATIO * (+chassis_motion->chassis_target_vx + chassis_motion->chassis_target_vy - chassis_motion->chassis_target_omega * (dx + dy)) / WHEEL_RADIUS;
+    chassis_motion->wheel_target_omega[2] = GEAR_RATIO * (-chassis_motion->chassis_target_vx + chassis_motion->chassis_target_vy - chassis_motion->chassis_target_omega * (dx + dy)) / WHEEL_RADIUS;
+    chassis_motion->wheel_target_omega[3] = GEAR_RATIO * (-chassis_motion->chassis_target_vx - chassis_motion->chassis_target_vy - chassis_motion->chassis_target_omega * (dx + dy)) / WHEEL_RADIUS;
 }
 
 #elif (CHASSIS_TYPE == 'OMNI')
 static void chassis_wheel_inverse_resolution(chassis_motion_value_t *chassis_motion)
 {
-    chassis_motion->wheel_target_omega[0] = (0.707f * chassis_motion->chassis_target_vx - 0.707f * chassis_motion->chassis_target_vy - chassis_motion->chassis_target_omega * WHEEL_TO_CORE_DISTANCE) / WHEEL_RADIUS; //1
-    chassis_motion->wheel_target_omega[1] = (0.707f * chassis_motion->chassis_target_vx + 0.707f * chassis_motion->chassis_target_vy - chassis_motion->chassis_target_omega * WHEEL_TO_CORE_DISTANCE) / WHEEL_RADIUS; //2
-    chassis_motion->wheel_target_omega[2] = (-0.707f * chassis_motion->chassis_target_vx + 0.707f * chassis_motion->chassis_target_vy - chassis_motion->chassis_target_omega * WHEEL_TO_CORE_DISTANCE) / WHEEL_RADIUS; //3
-    chassis_motion->wheel_target_omega[3] = (-0.707f * chassis_motion->chassis_target_vx - 0.707f * chassis_motion->chassis_target_vy - chassis_motion->chassis_target_omega * WHEEL_TO_CORE_DISTANCE) / WHEEL_RADIUS; //4
-
-    chassis_motion->motor_target_omega[0] = chassis_motion->wheel_target_omega[0] * GEAR_RATIO;
-    chassis_motion->motor_target_omega[1] = chassis_motion->wheel_target_omega[1] * GEAR_RATIO;
-    chassis_motion->motor_target_omega[2] = chassis_motion->wheel_target_omega[2] * GEAR_RATIO;
-    chassis_motion->motor_target_omega[3] = chassis_motion->wheel_target_omega[3] * GEAR_RATIO;
+    chassis_motion->wheel_target_omega[0] = GEAR_RATIO * (0.707f * chassis_motion->chassis_target_vx - 0.707f * chassis_motion->chassis_target_vy - chassis_motion->chassis_target_omega * WHEEL_TO_CORE_DISTANCE) / WHEEL_RADIUS; //1
+    chassis_motion->wheel_target_omega[1] = GEAR_RATIO * (0.707f * chassis_motion->chassis_target_vx + 0.707f * chassis_motion->chassis_target_vy - chassis_motion->chassis_target_omega * WHEEL_TO_CORE_DISTANCE) / WHEEL_RADIUS; //2
+    chassis_motion->wheel_target_omega[2] = GEAR_RATIO * (-0.707f * chassis_motion->chassis_target_vx + 0.707f * chassis_motion->chassis_target_vy - chassis_motion->chassis_target_omega * WHEEL_TO_CORE_DISTANCE) / WHEEL_RADIUS; //3
+    chassis_motion->wheel_target_omega[3] = GEAR_RATIO * (-0.707f * chassis_motion->chassis_target_vx - 0.707f * chassis_motion->chassis_target_vy - chassis_motion->chassis_target_omega * WHEEL_TO_CORE_DISTANCE) / WHEEL_RADIUS; //4
 }
 #endif
 
-//µ×ÅÌÏµÓëÔÆÌ¨ÏµµÈ¼Û
-//ÓÃÓÚµØÅÌ¸úËæ½âËã
+//ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½ï¿½ï¿½Ì¨Ïµï¿½È¼ï¿½
+//ï¿½ï¿½ï¿½Úµï¿½ï¿½Ì¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 void chassis_coordinate_resolution(float robot_target_vx, float robot_target_vy, chassis_motion_value_t *chassis_motion)
 {
     chassis_motion->chassis_target_vx = robot_target_vx;
@@ -39,7 +29,7 @@ void chassis_coordinate_resolution(float robot_target_vx, float robot_target_vy,
     chassis_wheel_inverse_resolution(chassis_motion);
 }
 
-//ÔÆÌ¨ÏµËÙ¶È½âËãµ½µ×ÅÌÏµËÙ¶È
+//ï¿½ï¿½Ì¨Ïµï¿½Ù¶È½ï¿½ï¿½ãµ½ï¿½ï¿½ï¿½ï¿½Ïµï¿½Ù¶ï¿½
 void gimbal_coordinate_resolution(float gimbal_target_vx, float gimbal_target_vy, float chassis_target_omega, float theta, chassis_motion_value_t *chassis_motion)
 {   
     float32_t sin_theta, cos_theta;
@@ -51,7 +41,7 @@ void gimbal_coordinate_resolution(float gimbal_target_vx, float gimbal_target_vy
     chassis_wheel_inverse_resolution(chassis_motion);
 }
 
-//Ô­µØÐ¡ÍÓÂÝ
+//Ô­ï¿½ï¿½Ð¡ï¿½ï¿½ï¿½ï¿½
 void top_stand_still(float chassis_target_omega, chassis_motion_value_t *chassis_motion)
 {
     chassis_motion->chassis_target_vx = 0.0f;
@@ -60,7 +50,7 @@ void top_stand_still(float chassis_target_omega, chassis_motion_value_t *chassis
     chassis_wheel_inverse_resolution(chassis_motion);
 }
 
-//Ð¡ÍÓÂÝÐÐ½ø
+//Ð¡ï¿½ï¿½ï¿½ï¿½ï¿½Ð½ï¿½
 #if (Robot_ID != 5)
 void top_moving(float gimbal_target_vx, float gimbal_target_vy, float chassis_target_omega, float theta, chassis_motion_value_t *chassis_motion)
 {
