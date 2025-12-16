@@ -19,17 +19,16 @@ static void chassis_wheel_inverse_resolution(chassis_motion_value_t *chassis_mot
 }
 #endif
 
-//ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½ï¿½ï¿½Ì¨Ïµï¿½È¼ï¿½
-//ï¿½ï¿½ï¿½Úµï¿½ï¿½Ì¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-void chassis_coordinate_resolution(float robot_target_vx, float robot_target_vy, chassis_motion_value_t *chassis_motion)
+//µ×ÅÌÏµ½âËã
+void chassis_coordinate_resolution(float robot_target_vx, float robot_target_vy, float robot_target_omega, chassis_motion_value_t *chassis_motion)
 {
     chassis_motion->chassis_target_vx = robot_target_vx;
     chassis_motion->chassis_target_vy = robot_target_vy;
-    chassis_motion->chassis_target_omega = 0.0f;
+    chassis_motion->chassis_target_omega = robot_target_omega;
     chassis_wheel_inverse_resolution(chassis_motion);
 }
 
-//ï¿½ï¿½Ì¨Ïµï¿½Ù¶È½ï¿½ï¿½ãµ½ï¿½ï¿½ï¿½ï¿½Ïµï¿½Ù¶ï¿½
+//ÔÆÌ¨Ïµ½âËã
 void gimbal_coordinate_resolution(float gimbal_target_vx, float gimbal_target_vy, float chassis_target_omega, float theta, chassis_motion_value_t *chassis_motion)
 {   
     float32_t sin_theta, cos_theta;
@@ -41,7 +40,7 @@ void gimbal_coordinate_resolution(float gimbal_target_vx, float gimbal_target_vy
     chassis_wheel_inverse_resolution(chassis_motion);
 }
 
-//Ô­ï¿½ï¿½Ð¡ï¿½ï¿½ï¿½ï¿½
+//Ô­µØÐ¡ÍÓÂÝ
 void top_stand_still(float chassis_target_omega, chassis_motion_value_t *chassis_motion)
 {
     chassis_motion->chassis_target_vx = 0.0f;
@@ -50,7 +49,7 @@ void top_stand_still(float chassis_target_omega, chassis_motion_value_t *chassis
     chassis_wheel_inverse_resolution(chassis_motion);
 }
 
-//Ð¡ï¿½ï¿½ï¿½ï¿½ï¿½Ð½ï¿½
+//Ð¡ÍÓÂÝÐÐ½ø
 #if (Robot_ID != 5)
 void top_moving(float gimbal_target_vx, float gimbal_target_vy, float chassis_target_omega, float theta, chassis_motion_value_t *chassis_motion)
 {

@@ -1,11 +1,3 @@
-//==================================================//
-/*****************************************************
- * @brief ï¿½ï¿½ï¿½ï¿½ï¿½Ë¶ï¿½ï¿½ï¿½ï¿½ï¿½
- * @author Modi CHIï¿½ï¿½ï¿½ï¿½É«Ã¨Ã¨Í·ï¿½ï¿½o(ï¿½ï¿½ï¿½Þ¨ï¿½ï¿½Þ¡ï¿½)o
- * @attention È«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½Ë¶ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½ë£¬ï¿½ï¿½ï¿½ï¿½Ä£Ê½Ñ¡ï¿½ï¿½ï¿½ï¿½
-              ï¿½Ë¶ï¿½ï¿½ï¿½ï¿½Æ²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-*****************************************************/
-//==================================================//
 Class_PID chassis[4];
 
 
@@ -34,51 +26,58 @@ void chassis_control(float target_vx, float target_vy, float target_omega, float
     }
 }
 
-//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//µ×ÅÌÎÞÁ¦
 static void chassis_zero_force(void)
 {
-    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµ0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    //²»ÊäÈëµçÁ÷
     CAN_cmd_chassis(0, 0, 0, 0);
 }
 
-//ï¿½ï¿½ï¿½Ì¾ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-static void chassis_static(float target_vx, float target_vy)
+//µ×ÅÌ¾²Ö¹
+static void chassis_static(void)
 {
-    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½Ù¶ï¿½
-    chassis_coordinate_resolution(target_vx, target_vy, &chassis_motion);
+    float target_vx = 0.0f;
+    float target_vy = 0.0f;
+    float target_omega = 0.0f;
+    chassis_coordinate_resolution(target_vx, target_vy, target_omega, &chassis_motion);
 
 }
 
-//ï¿½ï¿½ï¿½Ì¸ï¿½ï¿½ï¿½
-static void chassis_follow(float target_vx, float target_vy)
+//µ×ÅÌ¸úËæ
+static void chassis_follow(float target_vx, float target_vy, float target_omega)
 {
-    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½Ù¶ï¿½
-    chassis_coordinate_resolution(target_vx, target_vy, &chassis_motion);
+    chassis_coordinate_resolution(target_vx, target_vy, target_omega, &chassis_motion);
 
 }
 
-//Ô­ï¿½ï¿½Ð¡ï¿½ï¿½ï¿½ï¿½
+//Ð¡ÍÓÂÝ
 static void chassis_top(float target_omega)
 {
-    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½Ù¶ï¿½
     top_stand_still(target_omega, &chassis_motion);
 
 }
 
-//Ð¡ï¿½ï¿½ï¿½ï¿½ï¿½Ð½ï¿½
+//Ð¡ÍÓÂÝÐÐ½ø
 static void chassis_top_moving(float target_vx, float target_vy, float target_omega, float theta)
 {
-    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½Ù¶ï¿½
+
     top_moving(target_vx, target_vy, target_omega, theta, &chassis_motion);
+    
 
 }
 
 static void chassis_calculation(void)
 {
-    ;
+    chassis[0].Set_Values(chassis_motion.wheel_target_omega[0], m3508.motor_omega[0]);
+    chassis[1].Set_Values(chassis_motion.wheel_target_omega[0], m3508.motor_omega[1]);
+    chassis[2].Set_Values(chassis_motion.wheel_target_omega[0], m3508.motor_omega[2]);
+    chassis[3].Set_Values(chassis_motion.wheel_target_omega[0], m3508.motor_omega[3]);
 }
 
 void chassis_init(void)
 {
     chassis[0].Init();
+    chassis[1].Init();
+    chassis[2].Init();
+    chassis[3].Init();
 }

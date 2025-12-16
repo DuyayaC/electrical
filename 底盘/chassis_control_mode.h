@@ -8,17 +8,17 @@
 
 typedef enum
 {
-    CHASSIS_FOLLOW, //Е╨∙Г⌡≤Х╥÷И ▐
-    CHASSIS_COORDINATE, //Е╨∙Г⌡≤ГЁ╩
-    GIMBAL_COORDINATE, //Д╨▒Е▐╟ГЁ╩
-    CHASSIS_ZERO_FORCE, //Е╨∙Г⌡≤Ф≈═Е┼⌡
-    CHASSIS_STATIC, //Е╨∙Г⌡≤И²≥Ф╜╒О╪▄Г■╣Ф°╨И■│Е╝ Д╫█Г╫╝
-    CHASSIS_TOP, //Е▌÷Е°╟Е╟▐И≥─Х·╨
-    CHASSIS_TOP_MOVING, //Е╟▐И≥─Х·╨Х║▄Х©⌡
-    CHASSIS_RC_MODE, //И│╔Ф▌╖Е≥╗Ф▌╖Е┬╤Ф╗║Е╪▐
-    CHASSIS_KEY_MODE, //И■╝И╪═Ф▌╖Е┬╤Ф╗║Е╪▐
+    CHASSIS_FOLLOW, //╣вел╦ЗкФ
+    CHASSIS_COORDINATE, //╣вело╣
+    GIMBAL_COORDINATE, //тфл╗о╣
+    CHASSIS_ZERO_FORCE, //╣велнча╕
+    CHASSIS_STATIC, //╣вел╬╡ж╧ё╛╣Г╩ЗкЬ╤╗н╩жц
+    CHASSIS_TOP, //т╜╣ьп║мсбщ
+    CHASSIS_TOP_MOVING, //п║мсбщпп╫Ь
+    CHASSIS_RC_MODE, //рё©ьфВ©ьжфдёй╫
+    CHASSIS_KEY_MODE, //╪ЭйС©ьжфдёй╫
 }CHASSIS_CONTROL_MODE;
 
-//Е╨∙Г⌡≤Ф╗║Е╪▐И─┴Ф▀╘О╪▄И≥└Е╦╕Е╞╧Е╨■Ф╗║Е╪▐Д╦▀Г └Д╩╩Е┼║Х╖ёГ╝≈
+//╣велдёй╫я║тЯё╛╦╫╢Ь╤тс╕дёй╫об╣дхннЯ╫БкЦ
 extern void chassis_control(float target_vx, float target_vy, float target_omega, float theta, CHASSIS_CONTROL_MODE MODE);
 extern void chassis_init(void);
