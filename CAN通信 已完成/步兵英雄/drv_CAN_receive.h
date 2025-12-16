@@ -28,7 +28,8 @@ typedef enum
     CAN_BARREL_MOTOR_ID = 0x208,
     CAN_GIMBAL_ALL_ID = 0x1FE,
 	
-		CAN_IMU_ID = 0x05,
+		CAN_IMU_SEND_ID = 0x05,
+    CAN_IMU_RECEIVE_ID = 0x11,
 
 } can_msg_id_e __attribute__((aligned(4)));
 
