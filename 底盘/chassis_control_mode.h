@@ -6,6 +6,8 @@
 #include "motor_data.h"
 #include "alg_pid.h"
 
+Class_PID chassis[4];
+
 typedef enum
 {
     CHASSIS_FOLLOW, //µ×ÅÌ¸úËæ
