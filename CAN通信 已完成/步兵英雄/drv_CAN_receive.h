@@ -78,7 +78,7 @@ extern void CAN_cmd_friction(int16_t motor1, int16_t motor2);
 
 extern void CAN_cmd_shoot(int16_t shoot, int16_t rev);
 
-
+extern void motor_error_repor(uint8_t error);
 /**
   * @brief          return the yaw 6020 motor data point
   * @param[in]      none
