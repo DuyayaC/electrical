@@ -11,12 +11,13 @@ extern CAN_HandleTypeDef hcan2;
     (ptr)->speed_rpm = (uint16_t)((data)[2] << 8 | (data)[3]);     \
     (ptr)->given_current = (uint16_t)((data)[4] << 8 | (data)[5]); \
     (ptr)->temperate = (data)[6];                                  \
+    (prt)->error = (data)[7];                                      \ 
   }
 /*
 motor data,  0:chassis motor1 3508;1:chassis motor3 3508;2:chassis motor3 3508;3:chassis motor4 3508;
 4:yaw gimbal motor 6020;5:pitch gimbal motor 6020;6:trigger motor 2006;
-�������?, 0:���̵��?1 3508���?,  1:���̵��?2 3508���?,2:���̵��?3 3508���?,3:���̵��?4 3508���?;
-4:yaw��̨���? 6020���?; 5:pitch��̨���? 6020���?; 6:�������? 2006���?*/
+�������??, 0:���̵��??1 3508���??,  1:���̵��??2 3508���??,2:���̵��??3 3508���??,3:���̵��??4 3508���??;
+4:yaw��̨���?? 6020���??; 5:pitch��̨���?? 6020���??; 6:�������?? 2006���??*/
 // static motor_measure_t motor_chassis[7];
 static motor_measure_t motor_chassis_can1[7];
 static motor_measure_t motor_chassis_can2[7];
@@ -116,10 +117,10 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
  * @retval         none
  */
 /**
- * @brief          ���͵�����Ƶ���?(0x205,0x206,0x207,0x208)
- * @param[in]      pitch: (0x206) 6020������Ƶ���?, ��Χ [-30000,30000]
- * @param[in]      shoot: (0x207) 2006������Ƶ���?, ��Χ [-10000,10000]
- * @param[in]      rev: (0x208) ������������Ƶ���?
+ * @brief          ���͵�����Ƶ���??(0x205,0x206,0x207,0x208)
+ * @param[in]      pitch: (0x206) 6020������Ƶ���??, ��Χ [-30000,30000]
+ * @param[in]      shoot: (0x207) 2006������Ƶ���??, ��Χ [-10000,10000]
+ * @param[in]      rev: (0x208) ������������Ƶ���??
  * @retval         none
  */
 void CAN_cmd_pitch(int16_t pitch)
@@ -143,10 +144,10 @@ void CAN_cmd_pitch(int16_t pitch)
  * @retval         none
  */
 /**
- * @brief          ���͵�����Ƶ���?(0x205,0x206,0x207,0x208)
- * @param[in]      pitch: (0x206) 6020������Ƶ���?, ��Χ [-30000,30000]
- * @param[in]      shoot: (0x207) 2006������Ƶ���?, ��Χ [-10000,10000]
- * @param[in]      rev: (0x208) ������������Ƶ���?
+ * @brief          ���͵�����Ƶ���??(0x205,0x206,0x207,0x208)
+ * @param[in]      pitch: (0x206) 6020������Ƶ���??, ��Χ [-30000,30000]
+ * @param[in]      shoot: (0x207) 2006������Ƶ���??, ��Χ [-10000,10000]
+ * @param[in]      rev: (0x208) ������������Ƶ���??
  * @retval         none
  */
 void CAN_cmd_yaw(int16_t yaw)
@@ -199,11 +200,11 @@ void CAN_cmd_chassis_reset_ID(void)
  * @retval         none
  */
 /**
- * @brief          ���͵�����Ƶ���?(0x201,0x202,0x203,0x204)
- * @param[in]      motor1: (0x201) 3508������Ƶ���?, ��Χ [-16384,16384]
- * @param[in]      motor2: (0x202) 3508������Ƶ���?, ��Χ [-16384,16384]
- * @param[in]      motor3: (0x203) 3508������Ƶ���?, ��Χ [-16384,16384]
- * @param[in]      motor4: (0x204) 3508������Ƶ���?, ��Χ [-16384,16384]
+ * @brief          ���͵�����Ƶ���??(0x201,0x202,0x203,0x204)
+ * @param[in]      motor1: (0x201) 3508������Ƶ���??, ��Χ [-16384,16384]
+ * @param[in]      motor2: (0x202) 3508������Ƶ���??, ��Χ [-16384,16384]
+ * @param[in]      motor3: (0x203) 3508������Ƶ���??, ��Χ [-16384,16384]
+ * @param[in]      motor4: (0x204) 3508������Ƶ���??, ��Χ [-16384,16384]
  * @retval         none
  */
 void CAN_cmd_chassis(int16_t motor1, int16_t motor2, int16_t motor3, int16_t motor4)
@@ -245,7 +246,7 @@ void CAN_cmd_friction(int16_t motor1, int16_t motor2, int16_t motor3, int16_t mo
   HAL_CAN_AddTxMessage(&FRICTION_CAN, &chassis_tx_message, chassis_can_send_data, &send_mail_box);
 }
 
-//依据实际改写确定
+//依据实际改写�?�?
 void CAN_cmd_shoot(int16_t shoot, int16_t rev)
 {
   uint32_t send_mail_box;
@@ -276,7 +277,7 @@ void CAN_cmd_friction(int16_t motor1, int16_t motor2)
   HAL_CAN_AddTxMessage(&FRICTION_CAN, &chassis_tx_message, chassis_can_send_data, &send_mail_box);
 }
 
-//依据实际改写确定
+//依据实际改写�?�?
 void CAN_cmd_shoot(int16_t shoot, int16_t rev)
 {
   uint32_t send_mail_box;
@@ -307,7 +308,7 @@ void CAN_cmd_friction(int16_t motor1, int16_t motor2)
   HAL_CAN_AddTxMessage(&FRICTION_CAN, &chassis_tx_message, chassis_can_send_data, &send_mail_box);
 }
 
-//依据实际改写确定
+//依据实际改写�?�?
 void CAN_cmd_shoot(int16_t shoot, int16_t barrel)
 {
   uint32_t send_mail_box;
@@ -331,9 +332,9 @@ void CAN_cmd_shoot(int16_t shoot, int16_t barrel)
  * @retval         motor data point
  */
 /**
- * @brief          ����yaw 6020�������ָ��?
+ * @brief          ����yaw 6020�������ָ��??
  * @param[in]      none
- * @retval         �������ָ��?
+ * @retval         �������ָ��??
  */
 const motor_measure_t *get_yaw_gimbal_motor_measure_point(void)
 {
@@ -346,9 +347,9 @@ const motor_measure_t *get_yaw_gimbal_motor_measure_point(void)
  * @retval         motor data point
  */
 /**
- * @brief          ����pitch 6020�������ָ��?
+ * @brief          ����pitch 6020�������ָ��??
  * @param[in]      none
- * @retval         �������ָ��?
+ * @retval         �������ָ��??
  */
 const motor_measure_t *get_pitch_gimbal_motor_measure_point(void)
 {
@@ -361,9 +362,9 @@ const motor_measure_t *get_pitch_gimbal_motor_measure_point(void)
  * @retval         motor data point
  */
 /**
- * @brief          ���ز������? 2006�������ָ��?
+ * @brief          ���ز������?? 2006�������ָ��??
  * @param[in]      none
- * @retval         �������ָ��?
+ * @retval         �������ָ��??
  */
 const motor_measure_t *get_trigger_motor_measure_point(void)
 {

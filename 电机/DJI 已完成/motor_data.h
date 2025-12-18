@@ -6,7 +6,6 @@
 #define MOTOR_DATA
 
 #include "drv_CAN_receive.h"
-#include "arm_math.h"
 #include <math.h>
 #include "Robot_Property.h"
 
@@ -60,7 +59,7 @@ extern M2006_t m2006;
 
 typedef struct 
 {
-    ;//��֪��дʲô�������ڱ����д ( ?? �� ?? )?
+    ;//��֪��дʲô�������ڱ�����? ( ?? �� ?? )?
 }GIM8115_t;
 extern GIM8115_t gim8115;
 

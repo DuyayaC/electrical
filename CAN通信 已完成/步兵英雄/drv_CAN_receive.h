@@ -41,6 +41,7 @@ typedef struct
     int16_t given_current;
     uint8_t temperate;
     int16_t last_ecd;
+    uint8_t error;
 } motor_measure_t __attribute__((aligned(4)));
 
 
