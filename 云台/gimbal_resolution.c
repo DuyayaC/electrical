@@ -1,0 +1,1 @@
+#include "gimbal_resolution.h"
