@@ -324,7 +324,13 @@ void CAN_cmd_shoot(int16_t shoot, int16_t barrel)
 }
 #endif
 
-
+void motor_error_repor(uint8_t error)
+{
+  if (error != 0)
+  {
+    ;
+  }
+}
 
 /**
  * @brief          return the yaw 6020 motor data point
