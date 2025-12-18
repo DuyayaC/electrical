@@ -1,30 +1,30 @@
-/*é»˜è®¤ä½¿ç”¨åŠŸçŽ‡ã€çˆ†å‘ä¼˜å…ˆ*/
+/*Ä¬ÈÏÊ¹ÓÃ¹¦ÂÊ¡¢±¬·¢ÓÅÏÈ*/
 
-/*æœºå™¨äººç¼–å·*/
-/*1. è‹±é›„æœºå™¨äºº
-  2. å·¥ç¨‹æœºå™¨äºº
-  3. æ­¥å…µæœºå™¨äºº
-  4. æ­¥å…µæœºå™¨äºº
-  5. å“¨å…µæœºå™¨äºº*/
-#define Robot_ID 3//å¡«å†™æœºå™¨äººç¼–å·æ¿€æ´»å¯¹åº”å®šä¹‰
+/*»úÆ÷ÈË±àºÅ*/
+/*1. Ó¢ÐÛ»úÆ÷ÈË
+  2. ¹¤³Ì»úÆ÷ÈË
+  3. ²½±ø»úÆ÷ÈË
+  4. ²½±ø»úÆ÷ÈË
+  5. ÉÚ±ø»úÆ÷ÈË*/
+#define Robot_ID 3//ÌîÐ´»úÆ÷ÈË±àºÅ¼¤»î¶ÔÓ¦¶¨Òå
 
-/*ç”µæœºæ•°é‡*/
+/*µç»úÊýÁ¿*/
 #define M3508_NUM 
 #define M2006_NUM
 #define GM6020_NUM
 
-/*æœºå™¨äººåº•ç›˜ç±»åž‹*/
+/*»úÆ÷ÈËµ×ÅÌÀàÐÍ*/
 #define CHASSIS_TYPE 'OMNI'
 
-/*æ­¥å…µåº•ç›˜ä¼˜å…ˆç±»åž‹*/
-#define POWER_PRIORITY //åŠŸçŽ‡ä¼˜å…ˆ
-//#define BLOOD_PRIORITY //è¡€é‡ä¼˜å…ˆ
+/*²½±øµ×ÅÌÓÅÏÈÀàÐÍ*/
+#define POWER_PRIORITY //¹¦ÂÊÓÅÏÈ
+//#define BLOOD_PRIORITY //ÑªÁ¿ÓÅÏÈ
 
-/*å‘å°„æœºæž„ç±»åž‹*/
-#define BURST //çˆ†å‘ä¼˜å…ˆ
-//#define COOLING //å†·å´ä¼˜å…ˆ
+/*·¢Éä»ú¹¹ÀàÐÍ*/
+#define BURST //±¬·¢ÓÅÏÈ
+//#define COOLING //ÀäÈ´ÓÅÏÈ
 
-/*è‹±é›„æœºå™¨äººå±žæ€§*/
+/*Ó¢ÐÛ»úÆ÷ÈËÊôÐÔ*/
 #if (Robot_ID == 1)
 #define POWER_MAX 100
 #define HEAT_MAX 200
@@ -33,7 +33,7 @@
 #define BULLET_SPEED_MAX 12
 #endif
 
-/*æ­¥å…µæœºå™¨äººå±žæ€§*/
+/*²½±ø»úÆ÷ÈËÊôÐÔ*/
 #if ((Robot_ID == 3) || (Robot_ID == 4))
 #define BULLET_SPEED_MAX 25
 #endif
@@ -58,7 +58,7 @@
 #define COOLING_SPEED 24
 #endif
 
-/*å“¨å…µæœºå™¨äººå±žæ€§*/
+/*ÉÚ±ø»úÆ÷ÈËÊôÐÔ*/
 #if (Robot_ID == 5)
 #define POWER_MAX 100
 #define HEAT_MAX 230
