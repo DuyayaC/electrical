@@ -1,7 +1,6 @@
-Class_PID chassis[4];
-
 #include "chassis_control_mode.h"
 
+Class_PID chassis[4];
 
 void chassis_control(float target_vx, float target_vy, float target_omega, float theta, CHASSIS_CONTROL_MODE MODE)
 {
