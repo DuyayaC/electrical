@@ -4,7 +4,7 @@
 
 #ifndef Filter_ON
 #define Filter_ON
-#define ALIGN_32_BYTES __attribute__((aligned(32))
+#define ALIGN_32_BYTES __attribute__((aligned(32)))
 
 
 class Class_IIR
@@ -33,7 +33,7 @@ public:
     void TIM_Calculate();
 
 protected:
-    // 初始化相关常量
+    // 初�?�化相关常量
     float A, B, H, Q, R;
     /*
     *A: state transfer scale
@@ -49,14 +49,14 @@ protected:
     // 增益
     float G = 0.0f;
 
-    //初始估计协方差
+    //初�?�估计协方差
     float P = 0.0f;
 	float _P = 10.0f;
 
-    // 输出值
+    // 输出�?
     float Out = 0.0f;
 
-    // 当前值
+    // 当前�?
     float Now = 0.0f;
 
 };
@@ -85,7 +85,7 @@ public:
     void TIM_Calculate();
 
 protected:
-    //初始化相关变量
+    //初�?�化相关变量
     float A, B, H;
     
     float ALIGN_32_BYTES P[3] = {0.0f, 0.0f, 0.0f};
