@@ -1,15 +1,15 @@
 #include "alg_pid.h"
 
 /**
- * @brief PID初始化
+ * @brief PID初�?�化
  *
- * @param __K_P P值
- * @param __K_I I值
- * @param __K_D D值
- * @param __K_F 前馈
- * @param __I_Out_Max 积分限幅
+ * @param __K_P P�?
+ * @param __K_I I�?
+ * @param __K_D D�?
+ * @param __K_F 前�??
+ * @param __I_Out_Max �?分限�?
  * @param __Out_Max 输出限幅
- * @param __D_T 时间片长度
+ * @param __D_T 时间片长�?
  */
 void Class_PID::Init(float __K_P, float __K_I, float __K_D, float __K_F, float __I_Out_Max, float __Out_Max, float __D_T, float __Dead_Zone, float __I_Variable_Speed_A, float __I_Variable_Speed_B, float __I_Separate_Threshold, Enum_PID_D_First __D_First)
 {
@@ -28,10 +28,10 @@ void Class_PID::Init(float __K_P, float __K_I, float __K_D, float __K_F, float _
 }
 
 /**
- * @brief 设置目标值和当前值
+ * @brief 设置�?标值和当前�?
  *
- * @param __Target 目标值
- * @param __Now 当前值
+ * @param __Target �?标�?
+ * @param __Now 当前�?
  */
 void Class_PID::Set_Values(float __Target, float __Now)
 {
@@ -40,7 +40,7 @@ void Class_PID::Set_Values(float __Target, float __Now)
 }
 
 /**
- * @brief 清除误差和状态
+ * @brief 清除�?�?和状�?
  *
  */
 void Class_PID::Clear_Error()
@@ -67,17 +67,17 @@ void Class_PID::Calculate(float *output)
     float d_out = 0.0f;
     // F输出
     float f_out = 0.0f;
-    //误差
+    //�?�?
     float error;
-    //绝对值误差
+    //绝�?�值�??�?
     float abs_error;
-    //线性变速积分
+    //线性变速积�?
     float speed_ratio;
     
     
     error = Target - Now;
-    // 使用CMSIS-DSP的绝对值函数
-    arm_abs_f32(&error, &abs_error, 1);
+    // 使用CMSIS-DSP的绝对值函�?
+    abs_error = Math_Abs(error);
 
     //判断死区
     if (abs_error < Dead_Zone)
@@ -86,18 +86,18 @@ void Class_PID::Calculate(float *output)
         abs_error = 0.0f;
     }
 
-    //计算p项
+    //计算p�?
     p_out = K_P * error;
 
-    //计算i项
+    //计算i�?
     if (I_Variable_Speed_A == 0.0f && I_Variable_Speed_B == 0.0f)
     {
-        //非变速积分
+        //非变速积�?
         speed_ratio = 1.0f;
     }
     else
     {
-        //变速积分
+        //变速积�?
         if (abs_error <= I_Variable_Speed_B)
         {
             speed_ratio = 1.0f;
@@ -115,13 +115,13 @@ void Class_PID::Calculate(float *output)
     
     if (I_Separate_Threshold == 0.0f)
     {
-        //没有积分分离
+        //没有�?分分�?
         Integral_Error += speed_ratio * D_T * error;
         i_out = K_I * Integral_Error;
     }
     else
     {
-        //积分分离使能
+        //�?分分离使�?
         if (abs_error < I_Separate_Threshold)
         {
             Integral_Error += speed_ratio * D_T * error;
@@ -140,25 +140,25 @@ void Class_PID::Calculate(float *output)
         Math_Constrain(&Integral_Error, &Integral_Error, integral_min, integral_max);
     }
 
-    //计算d项
+    //计算d�?
     if (D_First == PID_D_First_DISABLE)
     {
-        //没有微分先行
+        //没有�?分先�?
         d_out = K_D * (error - Pre_Error) / D_T;
     }
     else
     {
-        //微分先行使能
+        //�?分先行使�?
         d_out = K_D * (*output - Pre_Out) / D_T;
     }
 
-    //计算前馈
+    //计算前�??
     f_out = (Target - Pre_Target) * K_F;
 
-    //计算总共的输出
+    //计算总共的输�?
     *output = p_out + i_out + d_out + f_out;
     
-    //输出限幅 - 使用CMSIS-DSP的限幅函数
+    //输出限幅 - 使用CMSIS-DSP的限幅函�?
     if (Out_Max != 0.0f)
     {
         *output = Math_Constrain(*output, -Out_Max, Out_Max);
