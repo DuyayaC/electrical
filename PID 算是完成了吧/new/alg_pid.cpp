@@ -70,7 +70,7 @@ void Class_PID::Calculate(float *output)
     
     error = Target - Now;
     // 使用CMSIS-DSP的绝对值函数
-    arm_abs_f32(&error, &abs_error, 1);
+    abs_error = Math_Abs(error);
 
     //判断死区
     if (abs_error < Dead_Zone)
