@@ -12,7 +12,7 @@ void Class_IIR::In_Calculate_Out(float *data)
     last_data = *data;
 }
 
-//å•å˜é‡å¡å°”æ›¼æ»¤æ³¢
+//µ¥±äÁ¿¿¨¶ûÂüÂË²¨
 void Class_Filter_Kalman::Init(float a, float b, float h, float q, float r)
 {
     A = a;
@@ -23,7 +23,7 @@ void Class_Filter_Kalman::Init(float a, float b, float h, float q, float r)
 }
 
 /**
- * @brief æ»¤æ³¢å™¨è°ƒæ•´å€¼, å‘¨æœŸä¸é‡‡æ ·å‘¨æœŸç›¸åŒ
+ * @brief ÂË²¨Æ÷µ÷ÕûÖµ, ÖÜÆÚÓë²ÉÑùÖÜÆÚÏàÍ¬
  *
  */
 void Class_Filter_Kalman::TIM_Calculate()
@@ -38,47 +38,47 @@ void Class_Filter_Kalman::TIM_Calculate()
     P = (1.0f - G * H) * _P;
 }
 
-//ä¸‰è½´å¡å°”æ›¼æ»¤æ³¢å™¨
+//ÈıÖá¿¨¶ûÂüÂË²¨Æ÷
 void Class_Filter_XYZ_Kalman::Init()
 {
     A = 1.0f;
     B = 0.0f;
     H = 1.0f;
     
-    // åˆå§‹åŒ–çŸ©é˜µå®ä¾‹
-    arm_mat_init_f32(&mat_P, 1, 1, P);   // æ ‡é‡è§†ä¸º1x1çŸ©é˜µ
+    // ³õÊ¼»¯¾ØÕóÊµÀı
+    arm_mat_init_f32(&mat_P, 1, 1, P);   // ±êÁ¿ÊÓÎª1x1¾ØÕó
     arm_mat_init_f32(&mat_Q, 1, 1, Q);
     arm_mat_init_f32(&mat_R, 1, 1, R);
 }
 
 void Class_Filter_XYZ_Kalman_Optimized::TIM_Calculate_DSP_Batch()
 {
-    // æ‰¹é‡å¤„ç†ä¸‰ä¸ªè½´çš„æ•°æ®
+    // ÅúÁ¿´¦ÀíÈı¸öÖáµÄÊı¾İ
     float32_t A_squared = A * A;
     
-    // ä½¿ç”¨DSPåº“çš„æ‰¹é‡æ“ä½œ
-    // 1. æ‰¹é‡é¢„æµ‹æ›´æ–°
+    // Ê¹ÓÃDSP¿âµÄÅúÁ¿²Ù×÷
+    // 1. ÅúÁ¿Ô¤²â¸üĞÂ
     arm_scale_f32(Out, A, Out, 3);
     
-    // 2. æ‰¹é‡åæ–¹å·®é¢„æµ‹
+    // 2. ÅúÁ¿Ğ­·½²îÔ¤²â
     for(int i = 0; i < 3; i++) {
         _P[i] = A_squared * P[i] + Q[i];
     }
     
-    // 3. æ‰¹é‡å¡å°”æ›¼å¢ç›Šè®¡ç®—
+    // 3. ÅúÁ¿¿¨¶ûÂüÔöÒæ¼ÆËã
     for(int i = 0; i < 3; i++) {
         float32_t denominator = H * H * _P[i] + R[i];
         G[i] = (H * _P[i]) / denominator;
     }
     
-    // 4. æ‰¹é‡çŠ¶æ€æ›´æ–°
+    // 4. ÅúÁ¿×´Ì¬¸üĞÂ
     float32_t temp[3];
     arm_scale_f32(Out, H, temp, 3);          // temp = H * Out
     arm_sub_f32(Now, temp, temp, 3);         // temp = Now - temp (innovation)
     
     for(int i = 0; i < 3; i++) {
-        Out[i] = Out[i] + G[i] * temp[i];    // çŠ¶æ€æ›´æ–°
-        P[i] = (1.0f - G[i] * H) * _P[i];    // åæ–¹å·®æ›´æ–°
+        Out[i] = Out[i] + G[i] * temp[i];    // ×´Ì¬¸üĞÂ
+        P[i] = (1.0f - G[i] * H) * _P[i];    // Ğ­·½²î¸üĞÂ
     }
 }
 /************************ COPYRIGHT(C) USTC-ROBOWALKER **************************/

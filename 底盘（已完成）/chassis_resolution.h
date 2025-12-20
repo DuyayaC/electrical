@@ -16,9 +16,9 @@
 
 typedef struct 
 {   
-    float chassis_gimbal_deltatheta; //夹角
+    float chassis_gimbal_deltatheta; 
     float wheel_target_omega[4];
-    float chassis_omega; //底盘旋转速度
+    float chassis_omega; 
     float chassis_target_omega;
     float chassis_target_vx;
     float chassis_target_vy;
