@@ -7,7 +7,7 @@ void zerocheckecddji(float *target, float *now)
     
     float diff = target - now;
 
-    if (diff > 4096.0f)  //半圈编码器读数: 8192 / 2
+    if (diff > 4096.0f)  //半圈编码器�?�数: 8192 / 2
     {
         now += 8192;
     }
@@ -41,7 +41,7 @@ void zerocheckecd8115(float *target, float *now)
     
     float diff = target - now;
 
-    if (diff > 4096.0f)  //半圈编码器读数: 8192 / 2
+    if (diff > 4096.0f)  //半圈编码器�?�数: 8192 / 2
     {
         now += 8192;
     }

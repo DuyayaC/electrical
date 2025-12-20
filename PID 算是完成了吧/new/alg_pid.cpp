@@ -1,15 +1,15 @@
 #include "alg_pid.h"
 
 /**
- * @brief PIDåˆå§‹åŒ–
+ * @brief PID³õÊ¼»¯
  *
- * @param __K_P På€¼
- * @param __K_I Iå€¼
- * @param __K_D Då€¼
- * @param __K_F å‰é¦ˆ
- * @param __I_Out_Max ç§¯åˆ†é™å¹…
- * @param __Out_Max è¾“å‡ºé™å¹…
- * @param __D_T æ—¶é—´ç‰‡é•¿åº¦
+ * @param __K_P PÖµ
+ * @param __K_I IÖµ
+ * @param __K_D DÖµ
+ * @param __K_F Ç°À¡
+ * @param __I_Out_Max »ı·ÖÏŞ·ù
+ * @param __Out_Max Êä³öÏŞ·ù
+ * @param __D_T Ê±¼äÆ¬³¤¶È
  */
 void Class_PID::Init(float __K_P, float __K_I, float __K_D, float __K_F, float __I_Out_Max, float __Out_Max, float __D_T, float __Dead_Zone)
 {
@@ -24,10 +24,10 @@ void Class_PID::Init(float __K_P, float __K_I, float __K_D, float __K_F, float _
 }
 
 /**
- * @brief è®¾ç½®ç›®æ ‡å€¼å’Œå½“å‰å€¼
+ * @brief ÉèÖÃÄ¿±êÖµºÍµ±Ç°Öµ
  *
- * @param __Target ç›®æ ‡å€¼
- * @param __Now å½“å‰å€¼
+ * @param __Target Ä¿±êÖµ
+ * @param __Now µ±Ç°Öµ
  */
 void Class_PID::Set_Values(float __Target, float __Now)
 {
@@ -36,7 +36,7 @@ void Class_PID::Set_Values(float __Target, float __Now)
 }
 
 /**
- * @brief æ¸…é™¤è¯¯å·®å’ŒçŠ¶æ€
+ * @brief Çå³ıÎó²îºÍ×´Ì¬
  *
  */
 void Class_PID::Clear_Error()
@@ -49,44 +49,44 @@ void Class_PID::Clear_Error()
 }
 
 /**
- * @brief PIDè®¡ç®—å‡½æ•°
+ * @brief PID¼ÆËãº¯Êı
  *
- * @param output è¾“å‡ºæŒ‡é’ˆ
+ * @param output Êä³öÖ¸Õë
  */
 void Class_PID::Calculate(float *output)
 {
-    // Pè¾“å‡º
+    // PÊä³ö
     float p_out = 0.0f;
-    // Iè¾“å‡º
+    // IÊä³ö
     float i_out = 0.0f;
-    // Dè¾“å‡º
+    // DÊä³ö
     float d_out = 0.0f;
-    // Fè¾“å‡º
+    // FÊä³ö
     float f_out = 0.0f;
-    //è¯¯å·®
+    //Îó²î
     float error;
-    //ç»å¯¹å€¼è¯¯å·®
+    //¾ø¶ÔÖµÎó²î
     float abs_error;
     
     error = Target - Now;
-    // ä½¿ç”¨CMSIS-DSPçš„ç»å¯¹å€¼å‡½æ•°
+    // Ê¹ÓÃCMSIS-DSPµÄ¾ø¶ÔÖµº¯Êı
     arm_abs_f32(&error, &abs_error, 1);
 
-    //åˆ¤æ–­æ­»åŒº
+    //ÅĞ¶ÏËÀÇø
     if (abs_error < Dead_Zone)
     {
         error = 0.0f;
         abs_error = 0.0f;
     }
 
-    //è®¡ç®—pé¡¹
+    //¼ÆËãpÏî
     p_out = K_P * error;
 
-    //è®¡ç®—ié¡¹
-    // å…ˆè®¡ç®—æ–°çš„ç§¯åˆ†å€¼
+    //¼ÆËãiÏî
+    // ÏÈ¼ÆËãĞÂµÄ»ı·ÖÖµ
     float new_integral = Integral_Error + D_T * error;
     
-    // ç§¯åˆ†é™å¹…
+    // »ı·ÖÏŞ·ù
     if (I_Out_Max != 0.0f && K_I != 0.0f)
     {
         float integral_min = -I_Out_Max / K_I;
@@ -97,23 +97,23 @@ void Class_PID::Calculate(float *output)
     Integral_Error = new_integral;
     i_out = K_I * Integral_Error;
 
-    //è®¡ç®—dé¡¹
-    // æ ‡å‡†å¾®åˆ†é¡¹
+    //¼ÆËãdÏî
+    // ±ê×¼Î¢·ÖÏî
     d_out = K_D * (error - Pre_Error) / D_T;
 
-    //è®¡ç®—å‰é¦ˆ
+    //¼ÆËãÇ°À¡
     f_out = (Target - Pre_Target) * K_F;
 
-    //è®¡ç®—æ€»å…±çš„è¾“å‡º
+    //¼ÆËã×Ü¹²µÄÊä³ö
     *output = p_out + i_out + d_out + f_out;
     
-    //è¾“å‡ºé™å¹…
+    //Êä³öÏŞ·ù
     if (Out_Max != 0.0f)
     {
         *output = Math_Constrain(*output, -Out_Max, Out_Max);
     }
 
-    //å–„åå·¥ä½œ
+    //ÉÆºó¹¤×÷
     Pre_Now = Now;
     Pre_Target = Target;
     Pre_Out = *output;
