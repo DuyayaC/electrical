@@ -91,7 +91,7 @@ void Class_PID::Calculate(float *output)
     {
         float integral_min = -I_Out_Max / K_I;
         float integral_max = I_Out_Max / K_I;
-        new_integral = Math_Constrain(new_integral, integral_min, integral_max);
+        Math_Constrain(&new_integral, integral_min, integral_max);
     }
     
     Integral_Error = new_integral;
@@ -110,7 +110,7 @@ void Class_PID::Calculate(float *output)
     //输出限幅
     if (Out_Max != 0.0f)
     {
-        *output = Math_Constrain(*output, -Out_Max, Out_Max);
+        Math_Constrain(output, -Out_Max, Out_Max);
     }
 
     //善后工作
