@@ -132,7 +132,6 @@ int main(void)
   MX_USB_DEVICE_Init();
   MX_SPI1_Init();
   MX_TIM10_Init();
-	HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_1);
   /* USER CODE BEGIN 2 */
 	can_filter_init();
 	UART_Init(&huart1, NULL, SERIALPLOT_RX_VARIABLE_ASSIGNMENT_MAX_LENGTH);
