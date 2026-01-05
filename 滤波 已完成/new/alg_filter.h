@@ -12,7 +12,7 @@ class Class_IIR
 public:
     void Init(float __alpha);
 
-    void In_Calculate_Out(float *data);
+    void Calculate(float *data);
 
 protected:
     float alpha;
@@ -30,7 +30,7 @@ public:
 
     void Set_Now(float __Now);
 
-    void TIM_Calculate();
+    void Calculate();
 
 protected:
     // 初�?�化相关常量
@@ -82,7 +82,7 @@ public:
 
     void Set_Now(float *__Now);
 
-    void TIM_Calculate();
+    void Calculate();
 
 protected:
     //初�?�化相关变量

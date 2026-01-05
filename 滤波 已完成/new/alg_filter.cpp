@@ -6,7 +6,7 @@ void Class_IIR::Init(float __alpha)
     last_data = 0.0f;
 }
 
-void Class_IIR::In_Calculate_Out(float *data)
+void Class_IIR::Calculate(float *data)
 {
     *data = alpha * (*data) + (1 - alpha) * last_data;
     last_data = *data;
@@ -26,7 +26,7 @@ void Class_Filter_Kalman::Init(float a, float b, float h, float q, float r)
  * @brief 滤波器调整值, 周期与采样周期相同
  *
  */
-void Class_Filter_Kalman::TIM_Calculate()
+void Class_Filter_Kalman::Calculate()
 {   
     //predict update
     Out = A * Out;
@@ -51,7 +51,7 @@ void Class_Filter_XYZ_Kalman::Init()
     arm_mat_init_f32(&mat_R, 1, 1, R);
 }
 
-void Class_Filter_XYZ_Kalman_Optimized::TIM_Calculate_DSP_Batch()
+void Class_Filter_XYZ_Kalman::Calculate()
 {
     // 批量处理三个轴的数据
     float32_t A_squared = A * A;
