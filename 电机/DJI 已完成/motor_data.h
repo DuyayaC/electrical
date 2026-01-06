@@ -57,12 +57,12 @@ typedef struct
 }M2006_t __attribute__((aligned(4)));
 extern M2006_t m2006;
 
-typedef struct 
+/* typedef struct 
 {
     ;//��֪��дʲô�������ڱ�����? ( ?? �� ?? )?
 }GIM8115_t;
-extern GIM8115_t gim8115;
+extern GIM8115_t gim8115; */
 
-extern void motor_value_updata(MOTOR_NAME NAME);
+extern void motor_value_updata(void);
 extern void delta_angle_dji(float *now_ecd, float delta_angle, float *target_ecd);
 extern void delta_angle_8115(float *now_ecd, float delta_angle, float *target_ecd);
