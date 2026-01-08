@@ -1,91 +1,61 @@
 #include "robot_control.h"
 
-
 static float v_integral = 0;
 const float K[4] = {-73.90768f, -12.73487f, -20.00000f, -16.17029f};
 
-
 /**
- * @brief å››å…ƒæ•? -> æ¬§æ‹‰è§? (Pitch/Roll)ï¼Œå¹¶ç»™å‡º Pitch è§’é€Ÿåº¦
- * @param sensor_data  ä¼ æ„Ÿå™¨æ•°æ?ï¼ˆq[] å››å…ƒæ•°ã€gyro[] è§’é€Ÿåº¦ï¼?
- * @param robot_state  æœºå™¨äººçŠ¶æ€ï¼ˆè¾“å‡ºï¼špitch/roll/pitch_velï¼?
- * @note  pitch_vel è¿™é‡Œç›´æŽ¥å–é™€èžºä»ªæŸä¸€è½´ï¼ˆgyro[1]ï¼‰ï¼Œè½´å‘éœ€æ ¹æ® IMU å®‰è?…æ–¹å‘ç¡®è®?
+ * @brief ÕýÏòÔË¶¯Ñ§¼ÆËã (FK)
+ * @param robot_state Ö¸Ïò»úÆ÷ÈË×´Ì¬½á¹¹ÌåµÄÖ¸Õë
+ * @param alpha Ç°´óÍÈµç»ú½Ç (rad)
+ * @param beta  ºó´óÍÈµç»ú½Ç (rad)
+ * @param height  Êä³ö£ºÍÈ²¿¡°¸ß¶È/³¤¶È¡±£¨ÒÔµ×ÅÌÖÐµãÎª²Î¿¼£©
+ * @param theta1  Êä³ö£ºÖÐ¼äÁ¬¸Ë½Ç theta1 (rad)
+ * @param theta2  Êä³ö£ºÖÐ¼äÁ¬¸Ë½Ç theta2 (rad)
+ * @note  ÓÃÓÚ´Óµç»ú½Ç¼ÆËãÍÈ²¿µ±Ç°¼¸ºÎÐÎÌ¬£¨¸ß¶È£©£¬¹© VMC/¸ß¶È¿ØÖÆÊ¹ÓÃ
  */
-void Update_Euler_from_Quat(Robot_Sensors_t *sensor_data, Robot_State_t *robot_state)
+static void Calculate_FK(float alpha, float beta, float *height, float *theta1, float *theta2)
 {
-    // è¯»å–å››å…ƒæ•? (w, x, y, z)
-    float w = sensor_data->q[0];
-    float x = sensor_data->q[1];
-    float y = sensor_data->q[2];
-    float z = sensor_data->q[3];
-
-    // è®¡ç®—ä¿?ä»°è?? (pitch)
-    robot_state->pitch = atan2f(2.0f * (w * y - x * z), 1.0f - 2.0f * (y * y + z * z));
-    // è®¡ç®—æ¨?æ»šè?? (roll)
-    robot_state->roll = asinf(2.0f * (w * x + y * z)); 
-    //è§’é€Ÿåº¦åé?ˆé¡¹
-    robot_state->pitch_vel = sensor_data->gyro[1];
-
-    //æœºæ?°å®‰è£…è??å·?è¡¥å¿
-    //éœ€è¦å®žé™…æƒ…å†µç»§ç»?è°ƒè¯•
-    const float pitch_offset = 0.698906904f * PI / 180.0f;
-    robot_state->pitch -= pitch_offset;
-}
-
-
-/**
- * @brief æ­£å‘è¿åŠ¨å­¦è?¡ç®— (FK)
- * @param robot_state æŒ‡å‘æœºå™¨äººçŠ¶æ€ç»“æž„ä½“çš„æŒ‡é’?
- * @param alpha å‰å¤§è…¿ç”µæœºè?? (rad)
- * @param beta  åŽå¤§è…¿ç”µæœºè?? (rad)
- * @param height  è¾“å‡ºï¼šè…¿éƒ¨â€œé«˜åº?/é•¿åº¦â€ï¼ˆä»¥åº•ç›˜ä¸­ç‚¹ä¸ºå‚è€ƒï¼‰
- * @param theta1  è¾“å‡ºï¼šä¸­é—´è¿žæ†è?? theta1 (rad)
- * @param theta2  è¾“å‡ºï¼šä¸­é—´è¿žæ†è?? theta2 (rad)
- * @note  ç”¨äºŽä»Žç”µæœºè?’è?¡ç®—è…¿éƒ¨å½“å‰å‡ ä½•å½¢æ€ï¼ˆé«˜åº¦ï¼‰ï¼Œä¾? VMC/é«˜åº¦æŽ§åˆ¶ä½¿ç”¨
- */
-void Calculate_FK(float alpha, float beta, float *height, float *theta1, float *theta2)
-{
-    // A,Cç‚¹åæ ?
+    // A,Cµã×ø±ê
     float xa = L1 * cosf(alpha);
     float ya = L1 * sinf(alpha);
     float xc = L5 + L4 * cosf(beta);
     float yc = L4 * sinf(beta);
 
-    //ACè·ç??
+    //AC¾àÀë
     float Lac_sq = powf(xc - xa, 2) + powf(yc - ya, 2);
 
-    //ä¸?é—´å˜é‡?
+    //ÖÐ¼ä±äÁ¿
     float a = 2.0f * (xa - xc) * L2;
     float b = 2.0f * (ya - yc) * L2;
     float c = L3 * L3 - L2 * L2 - Lac_sq;
 
-    //æ±‚è§£theta (é¢„é˜²æ ¹å·å°äºŽ0)
+    //Çó½âtheta (Ô¤·À¸ùºÅÐ¡ÓÚ0)
     float delta = a*a + b*b - c*c;
     *theta1 = 2.0f * atan2f(b + sqrtf(fmaxf(delta, 0.0f)), a + c);
 
-    //è¶³éƒ¨ç«?ç‚?
+    //×ã²¿¶Ëµã
     float bx = xa + L2 * cosf(*theta1);
     float by = ya + L2 * sinf(*theta1);
 
     *theta2 = atan2f(yc - by, xc - bx);
 
-    //è®¡ç®—è…¿éƒ¨é«˜åº¦
-    // å¦‚æžœé‡å¿ƒåœ¨åº•ç›˜ä¸­ç‚¹ï¼ŒCoM_x_offset = L5 / 2.0f
+    //¼ÆËãÍÈ²¿¸ß¶È
+    // Èç¹ûÖØÐÄÔÚµ×ÅÌÖÐµã£¬CoM_x_offset = L5 / 2.0f
     *height = sqrtf(powf(bx - L5/2.0f, 2) + powf(by, 2));
 
 }
 
 /**
- * @brief Jacobian æ˜ å°„ï¼ˆVMCï¼šå°†æœŸæœ›ç«–ç›´åŠ? Fy æ˜ å°„åˆ°ä¸¤ç”µæœºåŠ›çŸ©ï¼?
- * @param alpha  å‰ç”µæœºè??
- * @param beta   åŽç”µæœºè??
- * @param theta1 FK è§£å‡ºæ¥çš„ä¸?é—´è?? theta1
- * @param theta2 FK è§£å‡ºæ¥çš„ä¸?é—´è?? theta2
- * @param Fy     æœŸæœ›ç«–ç›´æ”?æ’‘åŠ›ï¼ˆVMC è¾“å‡ºï¼?
- * @param tf     è¾“å‡ºï¼šå‰ç”µæœºåŠ›çŸ©
- * @param tb     è¾“å‡ºï¼šåŽç”µæœºåŠ›çŸ©
+ * @brief Jacobian Ó³Éä£¨VMC£º½«ÆÚÍûÊúÖ±Á¦ Fy Ó³Éäµ½Á½µç»úÁ¦¾Ø£©
+ * @param alpha  Ç°µç»ú½Ç
+ * @param beta   ºóµç»ú½Ç
+ * @param theta1 FK ½â³öÀ´µÄÖÐ¼ä½Ç theta1
+ * @param theta2 FK ½â³öÀ´µÄÖÐ¼ä½Ç theta2
+ * @param Fy     ÆÚÍûÊúÖ±Ö§³ÅÁ¦£¨VMC Êä³ö£©
+ * @param tf     Êä³ö£ºÇ°µç»úÁ¦¾Ø
+ * @param tb     Êä³ö£ººóµç»úÁ¦¾Ø
  */
-void Jacobian_Map(float alpha, float beta, float theta1, float theta2, float Fy, float *tf, float *tb)
+static void Jacobian_Map(float alpha, float beta, float theta1, float theta2, float Fy, float *tf, float *tb)
 {
     float detJ = sinf(theta1 - theta2);
     if (fabsf(detJ) < 0.0001f) detJ = 0.0001f; 
@@ -96,55 +66,51 @@ void Jacobian_Map(float alpha, float beta, float theta1, float theta2, float Fy,
 }
 
 /**
- * @brief æœºå™¨äººä¸»æŽ§åˆ¶å¾?çŽ?ï¼šIMUå§¿æ€è§£ç®? + è…¿éƒ¨FK + VMCé«˜åº¦/é€Ÿåº¦ + LQRå¹³è¡¡ + åŠ›çŸ©åˆ†é…
- * @param sensor_data  è¾“å…¥ï¼šä¼ æ„Ÿå™¨æ•°æ®ï¼ˆåŒ…å?è…¿ç”µæœºè?’ã€é€Ÿåº¦ç­‰ï¼‰
- * @param robot_state  è¾“å‡º/æ›´æ–°ï¼šæœºå™¨äººçŠ¶æ€ï¼ˆå§¿æ€è?’ã€é«˜åº¦ç­‰ï¼?
- * @param motor_output è¾“å‡ºï¼šæœ€ç»ˆä¸‹å‘åˆ°ç”µæœºçš„åŠ›çŸ©ï¼ˆè…?/è½?ï¼?
- * @param target_h     ç›?æ ‡è…¿éƒ¨é«˜åº?
- * @param target_v     ç›?æ ‡å‰è¿›é€Ÿåº¦
- * @note  IMU æ•°æ®æ¥è‡ª dm_imu å…¨å±€å˜é‡ imuï¼Œè¿™é‡Œæ¯ä¸?æŽ§åˆ¶å‘¨æœŸåŒæ?¥ä¸€æ¬¡åˆ° sensor_data
+ * @brief »úÆ÷ÈËÖ÷¿ØÖÆÑ­»·£ºIMU×ËÌ¬½âËã + ÍÈ²¿FK + VMC¸ß¶È/ËÙ¶È + LQRÆ½ºâ + Á¦¾Ø·ÖÅä
+ * @param sensor_data  ÊäÈë£º´«¸ÐÆ÷Êý¾Ý£¨°üº¬ÍÈµç»ú½Ç¡¢ËÙ¶ÈµÈ£©
+ * @param robot_state  Êä³ö/¸üÐÂ£º»úÆ÷ÈË×´Ì¬£¨×ËÌ¬½Ç¡¢¸ß¶ÈµÈ£©
+ * @param motor_output Êä³ö£º×îÖÕÏÂ·¢µ½µç»úµÄÁ¦¾Ø£¨ÍÈ/ÂÖ£©
+ * @param target_h     Ä¿±êÍÈ²¿¸ß¶È
+ * @param target_v     Ä¿±êÇ°½øËÙ¶È
+ * @note  IMU Êý¾ÝÀ´×Ô dm_imu È«¾Ö±äÁ¿ imu£¬ÕâÀïÃ¿¸ö¿ØÖÆÖÜÆÚÍ¬²½Ò»´Îµ½ sensor_data
  */
-void Robot_Control_Loop(Robot_Sensors_t *sensor_data,Robot_State_t *robot_state, Motor_Output_t *motor_output, float target_h, float target_v)
+void Robot_Control(Robot_Sensors_t *sensor_data,Robot_State_t *robot_state, Motor_Output_t *motor_output, float target_h, float target_v)
 {
-    //æ›´æ–°IMUæ•°æ®
-    sensor_data->q[0] = imu.q[0];
-    sensor_data->q[1] = imu.q[1]; 
-    sensor_data->q[2] = imu.q[2];
-    sensor_data->q[3] = imu.q[3];
-
-    sensor_data->gyro[0] = imu.gyro[0];
-    sensor_data->gyro[1] = imu.gyro[1]; 
-    sensor_data->gyro[2] = imu.gyro[2];
-
-    //å§¿æ€è§£ç®?
-    Update_Euler_from_Quat(sensor_data, robot_state);
-
-    //è¿åŠ¨å­¦è§£ç®?
+		sensor_data->gyro[0] = imu.gyro[0];
+		sensor_data->gyro[1] = imu.gyro[1];
+		sensor_data->gyro[2] = imu.gyro[2];
+		robot_state->pitch = imu.pitch;
+		robot_state->roll = imu.roll;
+    //ÔË¶¯Ñ§½âËã
     Calculate_FK(sensor_data->alpha_L, sensor_data->beta_L, &robot_state->h_L, &robot_state->theta1_L, &robot_state->theta2_L);
     Calculate_FK(sensor_data->alpha_R, sensor_data->beta_R, &robot_state->h_R, &robot_state->theta1_R, &robot_state->theta2_R);
 
-    //VMC:é€Ÿåº¦PIæŽ§åˆ¶
+    //VMC:ËÙ¶ÈPI¿ØÖÆ
     float v_error = target_v - sensor_data->x_vel;
-    v_integral = fmaxf(-0.5f, fminf(0.5f, v_integral + v_error * 0.001f)); //ç§?åˆ†é™å¹?
-    float th_offset = 0.5f * v_error + 0.1f * v_integral;  //è¿™é‡Œçš?0.5 å’?0.1 æ˜?éœ€è¦åŽæœŸè°ƒè¯•çš„å‚æ•°
+    v_integral = fmaxf(-0.5f, fminf(0.5f, v_integral + v_error * 0.001f)); //»ý·ÖÏÞ·ù
+    float th_offset = 0.5f * v_error + 0.1f * v_integral;  //ÕâÀïµÄ0.5 ºÍ0.1 ÊÇÐèÒªºóÆÚµ÷ÊÔµÄ²ÎÊý
 
-    //VMC:é«˜åº¦æŽ§åˆ¶Fy
+    //VMC:¸ß¶È¿ØÖÆFy
     float Fy_L = 150.0f * (target_h - robot_state->h_L) + TOTAL_MASS * G;
     float Fy_R = 150.0f * (target_h - robot_state->h_R) + TOTAL_MASS * G;
 
     //LQR
-    // è¿™é‡Œé€‰æ‹©ä¸å–ä¿¡äºŽxï¼? K[2] * xé¡¹è?¾ä¸º0
-    // æ­£ç¡®çš? LQR: u = -(k1*theta + k2*theta_dot + k3*x + k4*x_dot)
+    // ÕâÀïÑ¡Ôñ²»È¡ÐÅÓÚx£¬ K[2] * xÏîÉèÎª0
+    // ÕýÈ·µÄ LQR: u = -(k1*theta + k2*theta_dot + k3*x + k4*x_dot)
     float tau_bal = -(K[0] * (robot_state->pitch - th_offset) + 
                       K[1] * robot_state->pitch_vel + 
-                      K[2] * 0 + // ä¸å–ä¿¡äºŽä½ç§»
+                      K[2] * 0 + // ²»È¡ÐÅÓÚÎ»ÒÆ
                       K[3] * sensor_data->x_vel); 
 
-    //é›…å¯æ¯”æ˜ å°„åˆ°ç”µæœºåŠ›çŸ©
+    //ÑÅ¿É±ÈÓ³Éäµ½µç»úÁ¦¾Ø
     Jacobian_Map(sensor_data->alpha_L, sensor_data->beta_L, robot_state->theta1_L, robot_state->theta2_L, Fy_L, &motor_output->leg_LF, &motor_output->leg_LB);
     Jacobian_Map(sensor_data->alpha_R, sensor_data->beta_R, robot_state->theta1_R, robot_state->theta2_R, Fy_R, &motor_output->leg_RF, &motor_output->leg_RB);
 
-    //è½?å­åŠ›çŸ©åˆ†é…?
+    //ÂÖ×ÓÁ¦¾Ø·ÖÅä
     motor_output->wheel_L = -tau_bal / 2.0f;
     motor_output->wheel_R = tau_bal / 2.0f;
+		
+    //ÂÖ×ÓÁ¦¾Ø×ª»»µ½µçÁ÷
+		motor_output->wheel_L_output = motor_output->wheel_L * Iq_ratio_3508 / T_const;
+		motor_output->wheel_R_output = motor_output->wheel_R * Iq_ratio_3508 / T_const;
 }
