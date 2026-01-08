@@ -16,8 +16,8 @@
 #define h    0.15652f           //pendulum length
 #define G    9.81f     
 #define PI   3.14159265f
-#define T_const 2.46f
-#define Iq_ratio_3508 819.2f
+#define T_const 2.46f //力矩常数
+#define Iq_ratio_3508 819.2f //Q轴单位电流映射到16834
 
 
 typedef struct
