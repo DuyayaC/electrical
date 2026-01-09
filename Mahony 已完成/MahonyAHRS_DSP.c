@@ -1,10 +1,10 @@
 #include "MahonyAHRS_DSP.h"
 
-//开源Mahony算法，使用STM32自带的DSP计算库加速部分计算，将变量统一为结构体形式
-//未知原因导致"arm_atan2_f32"无法使用
+//开源Mahony算法，使用STM32�?带的DSP计算库加速部分�?�算，将变量统一为结构体形式
+//�?知原因�?�致"arm_atan2_f32"无法使用
 MahonyAHRS mahony;
 
-//快速平方根倒数
+//�?速平方根倒数
 float invsqrt_DSP(float x)
 {
     float32_t result;
@@ -19,7 +19,7 @@ void normalize(float32_t *vec, uint32_t size)
 
     arm_dot_prod_f32(vec, vec, size, &prod);
     arm_sqrt_f32(prod, &norm);
-    if (norm > 0)
+    if (norm > 0.0f)
     {
         arm_scale_f32(vec, 1.0f/norm, vec, size);
     }
