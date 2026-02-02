@@ -6,6 +6,7 @@
 #include "dm_imu.h"
 #include "can.h"
 #include "main.h"
+#include "Robot_Property.h"
 
 #define CHASSIS_CAN hcan2
 #define FRICTION_CAN hcan1
@@ -35,6 +36,7 @@ typedef enum
     CAN_MOTOR4_ID = 0x04,
 	
 		CAN_IMU_ID = 0x05,
+    CAN_IMU_Back_ID = 0x11,
 
 } can_msg_id_e __attribute__((aligned(4)));
 
@@ -75,13 +77,12 @@ extern void CAN_cmd_chassis_reset_ID(void);
   * @param[in]      motor4: (0x204) 3508 motor control current, range [-16384,16384] 
   * @retval         none
   */
-extern void CAN_cmd_chassis(int16_t motor1, int16_t motor2, int16_t motor3, int16_t motor4);
+extern void CAN_cmd_chassis(int16_t motor1, int16_t motor2);
 
 extern void CAN_cmd_friction(int16_t motor1, int16_t motor2);
 
 extern void CAN_cmd_shoot(int16_t shoot, int16_t rev);
 
-//平衡哨兵特供
 extern void SetAbsPosition_Count(int32_t target_pos_1, int32_t target_pos_2, int32_t target_pos_3, int32_t target_pos_4);
 extern void MotorDisableCtrl(uint8_t dev_addr_1, uint8_t dev_addr_2, uint8_t dev_addr_3, uint8_t dev_addr_4);
 extern void SetPosVelCtrlMaxIq(float target_param_1, float target_param_2, float target_param_3, float target_param_4);
@@ -91,7 +92,6 @@ extern void SetPosKiParam(float target_param_1, float target_param_2, float targ
 extern void GetPosition(uint8_t dev_addr_1, uint8_t dev_addr_2, uint8_t dev_addr_3, uint8_t dev_addr_4);
 extern void GetIq(uint8_t dev_addr_1, uint8_t dev_addr_2, uint8_t dev_addr_3, uint8_t dev_addr_4);
 extern void GetRunStatus(uint8_t dev_addr_1, uint8_t dev_addr_2, uint8_t dev_addr_3, uint8_t dev_addr_4);
-//特供结束
 
 /**
   * @brief          return the yaw 6020 motor data point

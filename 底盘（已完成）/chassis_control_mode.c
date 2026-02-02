@@ -2,32 +2,10 @@
 
 Class_PID chassis[4];
 
-void chassis_control(float target_vx, float target_vy, float target_omega, float theta, CHASSIS_CONTROL_MODE MODE)
-{
-    switch(MODE)
-    {
-        case CHASSIS_FOLLOW:
-            chassis_follow(float target_vx, float target_vy);
-            break;
-        case CHASSIS_ZERO_FORCE:
-            chassis_zero_force();
-            break;
-        case CHASSIS_STATIC:
-            chassis_static(target_vx, target_vy);
-            break;
-        case CHASSIS_TOP:
-            chassis_top(target_omega);
-            break;
-        case CHASSIS_TOP_MOVING:
-            chassis_top_moving(target_vx, target_vy, target_omega, theta);
-            break;
-    }
-}
-
 //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 static void chassis_zero_force(void)
 {
-    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿?
     CAN_cmd_chassis(0, 0, 0, 0);
 }
 
@@ -83,6 +61,28 @@ static void chassis_calculation(void)
     chassis[1].Calculate(&chassis_motion.motor_output_value[1]);
     chassis[2].Calculate(&chassis_motion.motor_output_value[2]);
     chassis[3].Calculate(&chassis_motion.motor_output_value[3]);
+}
+
+void chassis_control(float target_vx, float target_vy, float target_omega, float theta, CHASSIS_CONTROL_MODE MODE)
+{
+    switch(MODE)
+    {
+        case CHASSIS_FOLLOW:
+            chassis_follow(float target_vx, float target_vy);
+            break;
+        case CHASSIS_ZERO_FORCE:
+            chassis_zero_force();
+            break;
+        case CHASSIS_STATIC:
+            chassis_static(target_vx, target_vy);
+            break;
+        case CHASSIS_TOP:
+            chassis_top(target_omega);
+            break;
+        case CHASSIS_TOP_MOVING:
+            chassis_top_moving(target_vx, target_vy, target_omega, theta);
+            break;
+    }
 }
 
 void chassis_init(void)

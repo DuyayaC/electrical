@@ -305,7 +305,7 @@ void CommCan_MotorRunCtrlMode_Control(uint32_t dev_addr, float pos_target, float
 	tmp_buf[7] =  (uint8_t)(torque & 0xFF);
     
     /* Êý¾Ý·¢ËÍ */
-    {
+    
         CAN_TxHeaderTypeDef CAN_Header;
         uint32_t canTxMailbox;
         
@@ -315,7 +315,7 @@ void CommCan_MotorRunCtrlMode_Control(uint32_t dev_addr, float pos_target, float
         CAN_Header.DLC      = sizeof(tmp_buf);
 
         HAL_CAN_AddTxMessage(CAN_POINTER_COMM, &CAN_Header, tmp_buf, (uint32_t *)&canTxMailbox)
-    }
+    
 }
 
 

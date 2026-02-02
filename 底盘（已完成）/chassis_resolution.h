@@ -4,8 +4,8 @@
 #if (CHASSIS_TYPE == 'MECANUM')
 #define WHEEL_RADIUS
 #define GEAR_RATIO 19.20320856f
-#define dx
-#define dy
+#define dx 
+#define dy 
 #endif
 
 #if (CHASSIS_TYPE == 'OMNI')

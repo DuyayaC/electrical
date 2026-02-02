@@ -84,13 +84,6 @@ static void trigger_update(M2006_t *m2006)
     m2006->motor_omega[0] = motor->speed_rpm * 6.0f;
 }
 
-void motor_value_updata(void)
-{
-    trigger_update(&m2006);
-    m3508_update(&m3508);
-    gm6020_update(&gm6020);
-}
-
 #elif (Robot_ID == 4)
 static void chassis_m3508_update(M3508_t *m3508)
 {
@@ -138,11 +131,6 @@ void motor_value_updata(void)
 }
 #endif
 
-static void barrel_m2006_update(M2006_t)
-{
-    ;
-}
-
 static void m3508_update(void)
 {
     chassis_m3508_update(&m3508);
@@ -172,6 +160,13 @@ static void yaw_ecd_angle(void)
 {
     float angle = (gm6020.motor_ecd[0] - YAW_ZERO_ECD) *0.0439453125f;
     gm6020.motor_ecd_angle[0] = angle;
+}
+
+void motor_value_updata(void)
+{
+    trigger_update(&m2006);
+    m3508_update(&m3508);
+    gm6020_update(&gm6020);
 }
 
 void delta_angle_dji(int *now_ecd, int *target_ecd, float delta_angle_deg)
