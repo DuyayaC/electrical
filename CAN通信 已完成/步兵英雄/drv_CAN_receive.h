@@ -25,7 +25,6 @@ typedef enum
     CAN_YAW_MOTOR_ID = 0x205,
     CAN_PIT_MOTOR_ID = 0x206,
     CAN_TRIGGER_MOTOR_ID = 0x207,
-    CAN_BARREL_MOTOR_ID = 0x208,
     CAN_GIMBAL_ALL_ID = 0x1FE,
 	
 		CAN_IMU_SEND_ID = 0x05,
@@ -78,7 +77,6 @@ extern void CAN_cmd_friction(int16_t motor1, int16_t motor2);
 
 extern void CAN_cmd_shoot(int16_t shoot, int16_t rev);
 
-extern void motor_error_repor(uint8_t error);
 /**
   * @brief          return the yaw 6020 motor data point
   * @param[in]      none

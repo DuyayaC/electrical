@@ -16,8 +16,7 @@ extern CAN_HandleTypeDef hcan2;
 /*
 motor data,  0:chassis motor1 3508;1:chassis motor3 3508;2:chassis motor3 3508;3:chassis motor4 3508;
 4:yaw gimbal motor 6020;5:pitch gimbal motor 6020;6:trigger motor 2006;
-ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿??, 0:ï¿½ï¿½ï¿½Ìµï¿½ï¿??1 3508ï¿½ï¿½ï¿??,  1:ï¿½ï¿½ï¿½Ìµï¿½ï¿??2 3508ï¿½ï¿½ï¿??,2:ï¿½ï¿½ï¿½Ìµï¿½ï¿??3 3508ï¿½ï¿½ï¿??,3:ï¿½ï¿½ï¿½Ìµï¿½ï¿??4 3508ï¿½ï¿½ï¿??;
-4:yawï¿½ï¿½Ì¨ï¿½ï¿½ï¿?? 6020ï¿½ï¿½ï¿??; 5:pitchï¿½ï¿½Ì¨ï¿½ï¿½ï¿?? 6020ï¿½ï¿½ï¿??; 6:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿?? 2006ï¿½ï¿½ï¿??*/
+*/
 // static motor_measure_t motor_chassis[7];
 static motor_measure_t motor_chassis_can1[7];
 static motor_measure_t motor_chassis_can2[7];
@@ -25,6 +24,7 @@ static motor_measure_t motor_chassis_can2[7];
 static CAN_TxHeaderTypeDef gimbal_tx_message;
 static uint8_t gimbal_can_send_data[8];
 static uint8_t gimbal_yaw_can_send_data[8];
+
 static CAN_TxHeaderTypeDef chassis_tx_message;
 static uint8_t chassis_can_send_data[8];
 
@@ -110,19 +110,13 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 
 /**
  * @brief          send control current of motor (0x205, 0x206, 0x207, 0x208)
- * @param[in]      yaw: (0x205) 6020 motor control current, range [-30000,30000]
- * @param[in]      pitch: (0x206) 6020 motor control current, range [-30000,30000]
+ * @param[in]      yaw: (0x205) 6020 motor control current, range [-16384,16384]
+ * @param[in]      pitch: (0x206) 6020 motor control current, range [-16384,16384]
  * @param[in]      shoot: (0x207) 2006 motor control current, range [-10000,10000]
  * @param[in]      rev: (0x208) reserve motor control current
  * @retval         none
  */
-/**
- * @brief          ï¿½ï¿½ï¿½Íµï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿??(0x205,0x206,0x207,0x208)
- * @param[in]      pitch: (0x206) 6020ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿??, ï¿½ï¿½Î§ [-30000,30000]
- * @param[in]      shoot: (0x207) 2006ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿??, ï¿½ï¿½Î§ [-10000,10000]
- * @param[in]      rev: (0x208) ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿??
- * @retval         none
- */
+
 void CAN_cmd_pitch(int16_t pitch)
 {
   uint32_t send_mail_box;
@@ -135,21 +129,6 @@ void CAN_cmd_pitch(int16_t pitch)
   HAL_CAN_AddTxMessage(&GIMBAL_PITCH_CAN, &gimbal_tx_message, gimbal_can_send_data, &send_mail_box);
 }
 
-/**
- * @brief          send control current of motor (0x205, 0x206, 0x207, 0x208)
- * @param[in]      yaw: (0x205) 6020 motor control current, range [-30000,30000]
- * @param[in]      pitch: (0x206) 6020 motor control current, range [-30000,30000]
- * @param[in]      shoot: (0x207) 2006 motor control current, range [-10000,10000]
- * @param[in]      rev: (0x208) reserve motor control current
- * @retval         none
- */
-/**
- * @brief          ï¿½ï¿½ï¿½Íµï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿??(0x205,0x206,0x207,0x208)
- * @param[in]      pitch: (0x206) 6020ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿??, ï¿½ï¿½Î§ [-30000,30000]
- * @param[in]      shoot: (0x207) 2006ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿??, ï¿½ï¿½Î§ [-10000,10000]
- * @param[in]      rev: (0x208) ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿??
- * @retval         none
- */
 void CAN_cmd_yaw(int16_t yaw)
 {
   uint32_t send_mail_box;
@@ -167,11 +146,7 @@ void CAN_cmd_yaw(int16_t yaw)
  * @param[in]      none
  * @retval         none
  */
-/**
- * @brief          ï¿½ï¿½ï¿½ï¿½IDÎª0x700ï¿½ï¿½CANï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½3508ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ID
- * @param[in]      none
- * @retval         none
- */
+
 void CAN_cmd_chassis_reset_ID(void)
 {
   uint32_t send_mail_box;
@@ -197,14 +172,6 @@ void CAN_cmd_chassis_reset_ID(void)
  * @param[in]      motor2: (0x202) 3508 motor control current, range [-16384,16384]
  * @param[in]      motor3: (0x203) 3508 motor control current, range [-16384,16384]
  * @param[in]      motor4: (0x204) 3508 motor control current, range [-16384,16384]
- * @retval         none
- */
-/**
- * @brief          ï¿½ï¿½ï¿½Íµï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿??(0x201,0x202,0x203,0x204)
- * @param[in]      motor1: (0x201) 3508ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿??, ï¿½ï¿½Î§ [-16384,16384]
- * @param[in]      motor2: (0x202) 3508ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿??, ï¿½ï¿½Î§ [-16384,16384]
- * @param[in]      motor3: (0x203) 3508ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿??, ï¿½ï¿½Î§ [-16384,16384]
- * @param[in]      motor4: (0x204) 3508ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿??, ï¿½ï¿½Î§ [-16384,16384]
  * @retval         none
  */
 void CAN_cmd_chassis(int16_t motor1, int16_t motor2, int16_t motor3, int16_t motor4)
@@ -246,7 +213,7 @@ void CAN_cmd_friction(int16_t motor1, int16_t motor2, int16_t motor3, int16_t mo
   HAL_CAN_AddTxMessage(&FRICTION_CAN, &chassis_tx_message, chassis_can_send_data, &send_mail_box);
 }
 
-//ä¾æ®å®é™…æ”¹å†™ç¡?å®?
+//?????????ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½??????????
 void CAN_cmd_shoot(int16_t shoot, int16_t rev)
 {
   uint32_t send_mail_box;
@@ -277,7 +244,7 @@ void CAN_cmd_friction(int16_t motor1, int16_t motor2)
   HAL_CAN_AddTxMessage(&FRICTION_CAN, &chassis_tx_message, chassis_can_send_data, &send_mail_box);
 }
 
-//ä¾æ®å®é™…æ”¹å†™ç¡?å®?
+//?????????ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½??????????
 void CAN_cmd_shoot(int16_t shoot, int16_t rev)
 {
   uint32_t send_mail_box;
@@ -308,7 +275,7 @@ void CAN_cmd_friction(int16_t motor1, int16_t motor2)
   HAL_CAN_AddTxMessage(&FRICTION_CAN, &chassis_tx_message, chassis_can_send_data, &send_mail_box);
 }
 
-//ä¾æ®å®é™…æ”¹å†™ç¡?å®?
+//?????????ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½??????????
 void CAN_cmd_shoot(int16_t shoot, int16_t barrel)
 {
   uint32_t send_mail_box;
@@ -324,74 +291,83 @@ void CAN_cmd_shoot(int16_t shoot, int16_t barrel)
 }
 #endif
 
-void motor_error_repor(uint8_t error)
-{
-  if (error != 0)
-  {
-    ;
-  }
-}
+
 
 /**
  * @brief          return the yaw 6020 motor data point
  * @param[in]      none
  * @retval         motor data point
  */
-/**
- * @brief          ï¿½ï¿½ï¿½ï¿½yaw 6020ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿??
- * @param[in]      none
- * @retval         ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿??
- */
+#if (GIMBAL_YAW_CAN == hcan1)
+const motor_measure_t *get_yaw_gimbal_motor_measure_point(void)
+{
+  return &motor_chassis_can1[4];
+}
+#elif (GIMBAL_YAW_CAN == hcan2)
 const motor_measure_t *get_yaw_gimbal_motor_measure_point(void)
 {
   return &motor_chassis_can2[4];
 }
-
+#endif
 /**
  * @brief          return the pitch 6020 motor data point
  * @param[in]      none
  * @retval         motor data point
  */
-/**
- * @brief          ï¿½ï¿½ï¿½ï¿½pitch 6020ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿??
- * @param[in]      none
- * @retval         ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿??
- */
+#if (GIMBAL_PITCH_CAN == hcan1)
+
 const motor_measure_t *get_pitch_gimbal_motor_measure_point(void)
 {
   return &motor_chassis_can1[5];
 }
-
+#elif (GIMBAL_PITCH_CAN == hcan2)
+const motor_measure_t *get_pitch_gimbal_motor_measure_point(void)
+{
+  return &motor_chassis_can2[5];
+}
+#endif
 /**
  * @brief          return the trigger 2006 motor data point
  * @param[in]      none
  * @retval         motor data point
  */
-/**
- * @brief          ï¿½ï¿½ï¿½Ø²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿?? 2006ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿??
- * @param[in]      none
- * @retval         ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿??
- */
+#if (SHOOT_CAN == hcan1)
 const motor_measure_t *get_trigger_motor_measure_point(void)
 {
   return &motor_chassis_can1[6];
 }
-
-const motor_measure_t *get_barrel_motor_measure_point(void)
+#elif (SHOOT_CAN == hcan2)
+const motor_measure_t *get_trigger_motor_measure_point(void)
 {
-  return &motor_chassis_can1[7];
+  return &motor_chassis_can2[6];
 }
+#endif
+
 /**
  * @brief          return the chassis 3508 motor data point
  * @param[in]      i: motor number,range [0,3]
  * @retval         motor data point
  */
+#if (CHASSIS_CAN == hcan1)
+const motor_measure_t *get_chassis_motor_measure_point(uint8_t i)
+{
+  return &motor_chassis_can1[(i & 0x03)];
+}
+#elif (CHASSIS_CAN == hcan2)
 const motor_measure_t *get_chassis_motor_measure_point(uint8_t i)
 {
   return &motor_chassis_can2[(i & 0x03)];
 }
+#endif
 
+#if (FRICTION_CAN == hcan1)
 const motor_measure_t *get_friction_motor_measure_point(uint8_t i)
 {
   return &motor_chassis_can1[(i & 0x03)];
 }
+#elif (FRICTION_CAN == hcan2)
+const motor_measure_t *get_friction_motor_measure_point(uint8_t i)
+{
+  return &motor_chassis_can2[(i & 0x03)];
+}
+#endif  
