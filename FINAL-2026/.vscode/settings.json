@@ -1,0 +1,8 @@
+{
+    "KeilAssistant.Project.ExcludeList": [
+
+        "template.uvproj",
+        "template.uvprojx"
+    ],
+    "KeilAssistant.Project.FileLocationList": []
+}
