@@ -2,7 +2,7 @@
 
 void Class_IIR::Init(float __alpha)
 {
-    alpha == __alpha;
+    alpha = __alpha;
     last_data = 0.0f;
 }
 
@@ -10,6 +10,11 @@ void Class_IIR::Calculate(float *data)
 {
     *data = alpha * (*data) + (1 - alpha) * last_data;
     last_data = *data;
+}
+
+void Class_IIR::clear(void)
+{
+    last_data = 0.0f;
 }
 
 //µ¥±äÁ¿¿¨¶ûÂüÂË²¨
