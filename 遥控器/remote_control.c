@@ -1,174 +1,153 @@
 /**
   ****************************(C) COPYRIGHT 2019 DJI****************************
   * @file       remote_control.c/h
-  * @brief      Ò£¿ØÆ÷´¦Àí£¬Ò£¿ØÆ÷ÊÇÍ¨¹ıÀàËÆSBUSµÄĞ­Òé´«Êä£¬ÀûÓÃDMA´«Êä·½Ê½½ÚÔ¼CPU
-  *             ×ÊÔ´£¬ÀûÓÃ´®¿Ú¿ÕÏĞÖĞ¶ÏÀ´À­Æğ´¦Àíº¯Êı£¬Í¬Ê±Ìá¹©Ò»Ğ©µôÏßÖØÆôDMA£¬´®¿Ú
-  *             µÄ·½Ê½±£Ö¤ÈÈ²å°ÎµÄÎÈ¶¨ĞÔ¡£
-  * @note       ¸ÃÈÎÎñÊÇÍ¨¹ı´®¿ÚÖĞ¶ÏÆô¶¯£¬²»ÊÇfreeRTOSÈÎÎñ
-  * @history
-  *  Version    Date            Author          Modification
-  *  V1.0.0     Dec-01-2019     RM              1. Íê³É
-  *
-  @verbatim
-  ==============================================================================
-
-  ==============================================================================
-  @endverbatim
-  ****************************(C) COPYRIGHT 2019 DJI****************************
+  * @brief      SBUS remote control DMA + IDLE handling
   */
-	
+
 #include "remote_control.h"
-
 #include "main.h"
+#include "usart.h"
 
-#include "usart.h"	
+/* Debug: count RC IDLE events to help verify ISR firing */
+volatile uint32_t rc_idle_count = 0;
 
 extern UART_HandleTypeDef huart3;
 extern DMA_HandleTypeDef hdma_usart3_rx;
 
-
-//remote control data 
-//Ò£¿ØÆ÷¿ØÖÆ±äÁ¿
+// remote control data
 RC_ctrl_t rc_ctrl;
 
-//receive data, 18 bytes one frame, but set 36 bytes 
-//½ÓÊÕÔ­Ê¼Êı¾İ£¬Îª25¸ö×Ö½Ú£¬¸øÁË50¸ö×Ö½Ú³¤¶È£¬·ÀÖ¹DMA´«ÊäÔ½½ç
+// receive buffers (double buffer)
 uint8_t sbus_rx_buf[2][SBUS_RX_BUF_NUM];
 
 /**
-  * @brief          remote control init
-  * @param[in]      none
-  * @retval         none
-  */
-/**
-  * @brief          Ò£¿ØÆ÷³õÊ¼»¯
-  * @param[in]      none
-  * @retval         none
+  * @brief remote control init
   */
 void remote_control_init(void)
 {
     RC_init(sbus_rx_buf[0], sbus_rx_buf[1], SBUS_RX_BUF_NUM);
+    /* RC_init() å·²å®Œæˆ USART3 DMA åŒç¼“å†² + IDLE ä¸­æ–­é…ç½®å¹¶å¯åŠ¨ DMAã€‚
+       è¿™é‡Œä¸è¦å†è°ƒç”¨ HAL_UART_Receive_DMA()ï¼Œå¦åˆ™ä¼šè¦†ç›–åŒç¼“å†²é…ç½®ï¼Œå¯¼è‡´æ— æ³•æ­£ç¡®è§£åŒ…ã€‚ */
 }
-/**
-  * @brief          get remote control data point
-  * @param[in]      none
-  * @retval         remote control data point
-  */
-/**
-  * @brief          »ñÈ¡Ò£¿ØÆ÷Êı¾İÖ¸Õë
-  * @param[in]      none
-  * @retval         Ò£¿ØÆ÷Êı¾İÖ¸Õë
-  */
+
 const RC_ctrl_t *get_remote_control_point(void)
 {
     return &rc_ctrl;
+
 }
 
+// static inline int16_t rc_switch_to_channel_value(char s)
+// {
+//     /* DJI ä¸‰æ®µæ‹¨æ†ï¼šUP=1, MID=3, DOWN=2ï¼›æ˜ å°„åˆ° 11bit é€šé“å…¸å‹å€¼ */
+//     if (s == (char)RC_SW_UP) return (int16_t)RC_CH_VALUE_MAX;
+//     if (s == (char)RC_SW_DOWN) return (int16_t)RC_CH_VALUE_MIN;
+//     return (int16_t)RC_CH_VALUE_OFFSET;
+// }
 
-//´®¿ÚÖĞ¶Ï
-void USART3_IRQHandler(void)
+static void dbus_to_rc(volatile const uint8_t *dbus_buf, RC_ctrl_t *rc_ctrl)
 {
-    if(huart3.Instance->SR & UART_FLAG_RXNE)//½ÓÊÕµ½Êı¾İ
+    if (dbus_buf == NULL || rc_ctrl == NULL)
+    {
+        return;
+    }
+
+    /* å…ˆç»™æ‰€æœ‰é€šé“ä¸€ä¸ªå®‰å…¨é»˜è®¤å€¼ï¼ˆé˜²æ­¢ä¸»æ§ç”¨åˆ°æœªè§£å‡ºçš„é€šé“æ—¶ä¸€ç›´ä¸º 0ï¼‰ */
+    for (uint8_t i = 0; i < 10; i++)
+    {
+        rc_ctrl->rc.ch[i] = (int16_t)RC_CH_VALUE_OFFSET;
+    }
+		/* æ‹¨æ†ä»å·¦å¾€å³åˆ†åˆ«ä¸º 1 2 3 4 */
+	    rc_ctrl->rc.ch[0] = (((dbus_buf[1] | dbus_buf[2] << 8) & 0x07FF) - Rocker_Mid); // å³ä¾§æ‘‡æ†å·¦å³
+		rc_ctrl->rc.ch[1] = (((dbus_buf[2] >> 3 | dbus_buf[3] << 5) & 0x07FF) - Rocker_Mid); // å³ä¾§æ‘‡æ†ä¸Šä¸‹
+		rc_ctrl->rc.ch[2] = (((dbus_buf[3] >> 6 | dbus_buf[4] << 2 | dbus_buf[5] << 10) & 0x07FF) - Rocker_Mid); // å·¦ä¾§æ‘‡æ†ä¸Šä¸‹
+		rc_ctrl->rc.ch[3] = (((dbus_buf[5] >> 1 | dbus_buf[6] << 7) & 0x07FF) - Rocker_Mid); // å·¦ä¾§æ‘‡æ†å·¦å³
+		rc_ctrl->rc.ch[4] = (((dbus_buf[6] >> 4 | dbus_buf[7] << 4) & 0x07FF) - Rocker_Mid); // å·¦ä¾§æ—‹é’®
+		rc_ctrl->rc.ch[5] = (((dbus_buf[7] >> 7 | dbus_buf[8] << 1 | dbus_buf[9] << 9) & 0x07FF) - Rocker_Mid); // å³ä¾§æ—‹é’®
+		rc_ctrl->rc.ch[6] = (((dbus_buf[9] >> 2 | dbus_buf[10] << 6) & 0x07FF) - Rocker_Mid) / Rocker_Delt_Range; // ä¸€æ‹¨æ†
+		rc_ctrl->rc.ch[7] = (((dbus_buf[10] >> 5 | dbus_buf[11] << 3) & 0x07FF) - Rocker_Mid) / Rocker_Delt_Range; // äºŒæ‹¨æ†
+		rc_ctrl->rc.ch[8] = (((dbus_buf[12] | dbus_buf[13] << 8) & 0x07FF) - Rocker_Mid) / Rocker_Delt_Range;  // ä¸‰æ‹¨æ†
+		rc_ctrl->rc.ch[9] = (((dbus_buf[13] >> 3 | dbus_buf[14] << 5) & 0x07FF) - Rocker_Mid) / Rocker_Delt_Range; // å››æ‹¨æ†
+}
+
+ static void sbus_to_rc(volatile const uint8_t *sbus_buf, RC_ctrl_t *rc_ctrl)
+{
+    if (sbus_buf == NULL || rc_ctrl == NULL)
+    {
+        return;
+    }
+    /* å…ˆç»™æ‰€æœ‰é€šé“ä¸€ä¸ªå®‰å…¨é»˜è®¤å€¼ï¼ˆé˜²æ­¢ä¸»æ§ç”¨åˆ°æœªè§£å‡ºçš„é€šé“æ—¶ä¸€ç›´ä¸º 0ï¼‰ */
+    for (uint8_t i = 0; i < 10; i++)
+    {
+        rc_ctrl->rc.ch[i] = (int16_t)RC_CH_VALUE_OFFSET;
+    }
+		/* æ‹¨æ†ä»å·¦å¾€å³åˆ†åˆ«ä¸º 1 2 3 4 */
+	    rc_ctrl->rc.ch[0] = (((sbus_buf[1] | sbus_buf[2] << 8) & 0x07FF) - Rocker_Mid); /// å³ä¾§æ‘‡æ†å·¦å³
+		rc_ctrl->rc.ch[1] = (((sbus_buf[2] >> 3 | sbus_buf[3] << 5) & 0x07FF) - Rocker_Mid); // å³ä¾§æ‘‡æ†ä¸Šä¸‹
+		rc_ctrl->rc.ch[2] = (((sbus_buf[3] >> 6 | sbus_buf[4] << 2 | sbus_buf[5] << 10) & 0x07FF) - Rocker_Mid); // å·¦ä¾§æ‘‡æ†ä¸Šä¸‹
+		rc_ctrl->rc.ch[3] = (((sbus_buf[5] >> 1 | sbus_buf[6] << 7) & 0x07FF) - Rocker_Mid); // å·¦ä¾§æ‘‡æ†å·¦å³
+		rc_ctrl->rc.ch[4] = (((sbus_buf[6] >> 4 | sbus_buf[7] << 4) & 0x07FF) - Rocker_Mid); // å·¦ä¾§æ—‹é’®
+		rc_ctrl->rc.ch[5] = (((sbus_buf[7] >> 7 | sbus_buf[8] << 1 | sbus_buf[9] << 9) & 0x07FF) - Rocker_Mid); // å³ä¾§æ—‹é’®
+		rc_ctrl->rc.ch[6] = (((sbus_buf[9] >> 2 | sbus_buf[10] << 6) & 0x07FF) - Rocker_Mid) / Rocker_Delt_Range; // ä¸€æ‹¨æ†
+		rc_ctrl->rc.ch[7] = (((sbus_buf[10] >> 5 | sbus_buf[11] << 3) & 0x07FF) - Rocker_Mid) / Rocker_Delt_Range; // äºŒæ‹¨æ†
+		rc_ctrl->rc.ch[8] = (((sbus_buf[12] | sbus_buf[13] << 8) & 0x07FF) - Rocker_Mid) / Rocker_Delt_Range;  // ä¸‰æ‹¨æ†
+		rc_ctrl->rc.ch[9] = (((sbus_buf[13] >> 3 | sbus_buf[14] << 5) & 0x07FF) - Rocker_Mid) / Rocker_Delt_Range; // å››æ‹¨æ†
+}
+
+void RC_USART3_IRQHandler(void)
+{
+    if(huart3.Instance->SR & UART_FLAG_RXNE)
     {
         __HAL_UART_CLEAR_PEFLAG(&huart3);
     }
     else if(USART3->SR & UART_FLAG_IDLE)
     {
+        /* increment debug counter on IDLE */
+        rc_idle_count++;
         static uint16_t this_time_rx_len = 0;
 
         __HAL_UART_CLEAR_PEFLAG(&huart3);
 
         if ((hdma_usart3_rx.Instance->CR & DMA_SxCR_CT) == RESET)
         {
-            /* Current memory buffer used is Memory 0 */
-    
-            //disable DMA
-            //Ê§Ğ§DMA
             __HAL_DMA_DISABLE(&hdma_usart3_rx);
 
-            //get receive data length, length = set_data_length - remain_length
-            //»ñÈ¡½ÓÊÕÊı¾İ³¤¶È,³¤¶È = Éè¶¨³¤¶È - Ê£Óà³¤¶È
             this_time_rx_len = SBUS_RX_BUF_NUM - hdma_usart3_rx.Instance->NDTR;
 
-            //reset set_data_lenght
-            //ÖØĞÂÉè¶¨Êı¾İ³¤¶È
             hdma_usart3_rx.Instance->NDTR = SBUS_RX_BUF_NUM;
 
-            //set memory buffer 1
-            //Éè¶¨»º³åÇø1
             hdma_usart3_rx.Instance->CR |= DMA_SxCR_CT;
-            
-            //enable DMA
-            //Ê¹ÄÜDMA
+
             __HAL_DMA_ENABLE(&hdma_usart3_rx);
 
-            if(this_time_rx_len == RC_FRAME_LENGTH)
+            if(this_time_rx_len == RC_FRAME_LENGTH_SBUS)
             {
-//                HAL_UART_Transmit_IT(&huart1, sbus_rx_buf[0], 25);
-								sbus_to_rc(sbus_rx_buf[0], &rc_ctrl);
-							
-							
+                sbus_to_rc(sbus_rx_buf[0], &rc_ctrl);
+            }
+            else if(this_time_rx_len == RC_FRAME_LENGTH_DBUS)
+            {
+                dbus_to_rc(sbus_rx_buf[0], &rc_ctrl);
             }
         }
         else
         {
-            /* Current memory buffer used is Memory 1 */
-            //disable DMA
-            //Ê§Ğ§DMA
             __HAL_DMA_DISABLE(&hdma_usart3_rx);
 
-            //get receive data length, length = set_data_length - remain_length
-            //»ñÈ¡½ÓÊÕÊı¾İ³¤¶È,³¤¶È = Éè¶¨³¤¶È - Ê£Óà³¤¶È
             this_time_rx_len = SBUS_RX_BUF_NUM - hdma_usart3_rx.Instance->NDTR;
 
-            //reset set_data_lenght
-            //ÖØĞÂÉè¶¨Êı¾İ³¤¶È
             hdma_usart3_rx.Instance->NDTR = SBUS_RX_BUF_NUM;
 
-            //set memory buffer 0
-            //Éè¶¨»º³åÇø0
             DMA1_Stream1->CR &= ~(DMA_SxCR_CT);
-            
-            //enable DMA
-            //Ê¹ÄÜDMA
+
             __HAL_DMA_ENABLE(&hdma_usart3_rx);
 
-            if(this_time_rx_len == RC_FRAME_LENGTH)
+            if(this_time_rx_len == RC_FRAME_LENGTH_SBUS)
             {
-                //´¦ÀíÒ£¿ØÆ÷Êı¾İ
-//								HAL_UART_Transmit_DMA(&huart1, sbus_rx_buf[0], 25);
                 sbus_to_rc(sbus_rx_buf[1], &rc_ctrl);
-							
+            }
+            else if(this_time_rx_len == RC_FRAME_LENGTH_DBUS)
+            {
+                dbus_to_rc(sbus_rx_buf[1], &rc_ctrl);
             }
         }
     }
 }
-
-/**
-  * @brief          remote control protocol resolution
-  * @param[in]      sbus_buf: raw data point
-  * @param[out]     rc_ctrl: remote control data struct point
-  * @retval         none
-  */
-/**
-  * @brief          Ò£¿ØÆ÷Ğ­Òé½âÎö
-  * @param[in]      sbus_buf: Ô­ÉúÊı¾İÖ¸Õë
-  * @param[out]     rc_ctrl: Ò£¿ØÆ÷Êı¾İÖ¸
-  * @retval         none
-  */
-void sbus_to_rc(volatile const uint8_t *sbus_buf, RC_ctrl_t *rc_ctrl)
-{
-    if (sbus_buf == NULL || rc_ctrl == NULL)
-    {
-        return;
-    }
-		rc_ctrl->rc.ch[0] = ((sbus_buf[1]|sbus_buf[2]<< 8) & 0x07FF);
-		rc_ctrl->rc.ch[1] = ((sbus_buf[2]>>3|sbus_buf[3]<<5) & 0x07FF);
-		rc_ctrl->rc.ch[2] = ((sbus_buf[3]>>6|sbus_buf[4]<<2|sbus_buf[5]<<10) & 0x07FF);
-		rc_ctrl->rc.ch[3] = ((sbus_buf[5]>>1|sbus_buf[6]<<7) & 0x07FF);
-		rc_ctrl->rc.ch[4] = ((sbus_buf[6]>>4|sbus_buf[7]<<4) & 0x07FF);
-
-    rc_ctrl->rc.s[0] = ((sbus_buf[7]>>7|sbus_buf[8]<<1|sbus_buf[9]<<9) & 0x07FF);                  //!< Switch left
-    rc_ctrl->rc.s[1] = ((sbus_buf[9]>>2|sbus_buf[10]<<6) & 0x07FF);                    //!< Switch right
-}
-

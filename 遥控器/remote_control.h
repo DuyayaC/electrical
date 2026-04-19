@@ -1,13 +1,13 @@
 /**
   ****************************(C) COPYRIGHT 2016 DJI****************************
   * @file       remote_control.c/h
-  * @brief      Ò£¿ØÆ÷´¦Àí£¬Ò£¿ØÆ÷ÊÇÍ¨¹ıÀàËÆSBUSµÄĞ­Òé´«Êä£¬ÀûÓÃDMA´«Êä·½Ê½½ÚÔ¼CPU
-  *             ×ÊÔ´£¬ÀûÓÃ´®¿Ú¿ÕÏĞÖĞ¶ÏÀ´À­Æğ´¦Àíº¯Êı£¬Í¬Ê±Ìá¹©Ò»Ğ©µôÏßÖØÆôDMA£¬´®¿Ú
-  *             µÄ·½Ê½±£Ö¤ÈÈ²å°ÎµÄÎÈ¶¨ĞÔ¡£
+  * @brief      Ò£à ˜Ç·Ô¦mÃ¬Ò£à ˜Ç·Ë‡Í¨Ú½`Ì†SBUSÖ„Ğ­Ó©Ô«Ë¤Ã¬{ÔƒDMAÔ«Ë¤×½Ê½ŞšÔ¼CPU
+  *             ØŠÔ´Ã¬{ÔƒÔ®à šà •Ğ××4-Ç°Ô¦mÚ¯Ë½Ã¬Í¬Ê±Í¡Ù©Ò»Ğ©Ö´ĞŸ×˜Ç´DMAÃ¬Ô®à š
+  *             Ö„×½Ê½Ñ£Ö¤ÉˆÓ¥ÑÖ„ÏˆÖ¨Ñ”c
   * @note       
   * @history
   *  Version    Date            Author          Modification
-  *  V1.0.0     Dec-26-2018     RM              1. Íê³É
+  *  V1.0.0     Dec-26-2018     RM              1. ÎªÔ‰
   *
   @verbatim
   ==============================================================================
@@ -23,11 +23,18 @@
 
 #define SBUS_RX_BUF_NUM 50u
 
-#define RC_FRAME_LENGTH 25u
+#define RC_FRAME_LENGTH_SBUS 25u
+#define RC_FRAME_LENGTH_DBUS 18u
+/* å…¼å®¹æ—§ä»£ç ï¼šé»˜è®¤ä»æŒ‰ 25 å­—èŠ‚ SBUS å‘½å */
+#define RC_FRAME_LENGTH RC_FRAME_LENGTH_SBUS
 
 #define RC_CH_VALUE_MIN         ((uint16_t)364)
 #define RC_CH_VALUE_OFFSET      ((uint16_t)1024)
 #define RC_CH_VALUE_MAX         ((uint16_t)1684)
+
+/*-----------*/
+#define Rocker_Mid 1024
+#define Rocker_Delt_Range 783
 
 /* ----------------------- RC Switch Definition----------------------------- */
 #define RC_SW_UP                ((uint16_t)1)
@@ -41,15 +48,17 @@ typedef __packed struct
 {
         __packed struct
         {
-                int16_t ch[5];
-                char s[2];
+          int16_t ch[10];
+          char s[2];
         } rc;
         __packed struct
         {
-                uint16_t v;
+          uint16_t v;
         } key;
 
 } RC_ctrl_t;
+
+/* (debug counters removed) */
 
 
 /* ----------------------- Internal Data ----------------------------------- */
@@ -60,7 +69,7 @@ typedef __packed struct
   * @retval         none
   */
 /**
-  * @brief          Ò£¿ØÆ÷³õÊ¼»¯
+  * @brief          Ò£à ˜Ç·ÔµÊ¼Û¯
   * @param[in]      none
   * @retval         none
   */
@@ -71,9 +80,9 @@ extern void remote_control_init(void);
   * @retval         remote control data point
   */
 /**
-  * @brief          »ñÈ¡Ò£¿ØÆ÷Êı¾İÖ¸Õë
+  * @brief          Ü±È¡Ò£à ˜Ç·Ë½ßÖ¸Ö«
   * @param[in]      none
-  * @retval         Ò£¿ØÆ÷Êı¾İÖ¸Õë
+  * @retval         Ò£à ˜Ç·Ë½ßÖ¸Ö«
   */
 extern const RC_ctrl_t *get_remote_control_point(void);
 
@@ -84,13 +93,18 @@ extern const RC_ctrl_t *get_remote_control_point(void);
   * @retval         none
   */
 /**
-  * @brief          Ò£¿ØÆ÷Ğ­Òé½âÎö
-  * @param[in]      sbus_buf: Ô­ÉúÊı¾İÖ¸Õë
-  * @param[out]     rc_ctrl: Ò£¿ØÆ÷Êı¾İÖ¸
+  * @brief          Ò£à ˜Ç·Ğ­Ó©Ş¢Ï¶
+  * @param[in]      sbus_buf: Ô­ÊºË½ßÖ¸Ö«
+  * @param[out]     rc_ctrl: Ò£à ˜Ç·Ë½ßÖ¸
   * @retval         none
   */
-extern void sbus_to_rc(volatile const uint8_t *sbus_buf, RC_ctrl_t *rc_ctrl);
+//extern void sbus_to_rc(volatile const uint8_t *sbus_buf, RC_ctrl_t *rc_ctrl);
 
+/* Expose custom IRQ handler so ISR forwarder can call it */
+extern void RC_USART3_IRQHandler(void);
+
+/* Debug: IDLE interrupt counter (incremented on each RC IDLE event) */
+extern volatile uint32_t rc_idle_count;
 
 #endif
 
