@@ -30,7 +30,8 @@ static void PID_Math_Constrain(float *x, float Min, float Max)
 /**
  * @brief PID 初始化
  */
-void PID_Init(PID_t *pid, float kp, float ki, float kd, float kf, float i_max, float out_max, float dt, float dead_zone)
+
+ void PID_Init(PID_t *pid, float kp, float ki, float kd, float kf, float i_max, float out_max, float dead_zone)
 {
     pid->K_P = kp;
     pid->K_I = ki;
@@ -38,7 +39,7 @@ void PID_Init(PID_t *pid, float kp, float ki, float kd, float kf, float i_max, f
     pid->K_F = kf;
     pid->I_Out_Max = i_max;
     pid->Out_Max = out_max;
-    pid->D_T = dt;
+    pid->D_T = 0.001f;
     pid->Dead_Zone = dead_zone;
     
     PID_Clear_Error(pid); 

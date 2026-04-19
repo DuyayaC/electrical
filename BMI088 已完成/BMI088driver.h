@@ -49,12 +49,12 @@
 #define BMI088_GYRO_250_SEN 0.00013315805450396191230191732547673f
 #define BMI088_GYRO_125_SEN 0.000066579027251980956150958662738366f
 
-#define GxOFFSET -0.000681414269f
-#define GyOFFSET -0.00134240754f
-#define GzOFFSET -0.00143384014f
-#define AxOFFSET 0.299675316f
-#define AyOFFSET 0.0720675737f
-#define AzOFFSET 0.0f // Z���Ȳ���ȥ��Ʈֵ����Ϊ��Ʈֵ�����������ٶȵ�ֵ
+#define GxOFFSET 0.00216921605f
+#define GyOFFSET -0.00205399119f
+#define GzOFFSET -0.000883808592f
+#define AxOFFSET 0.55482476f
+#define AyOFFSET -0.0693757907f
+#define AzOFFSET 9.80781555f // Z���Ȳ���ȥ��Ʈֵ����Ϊ��Ʈֵ�����������ٶȵ�ֵ
 #define gNORM 9.84484291f
 
 typedef struct
@@ -69,10 +69,10 @@ typedef struct
 
     fp32 accel[3];
     fp32 gyro[3];
-    fp32 temperate;
-} BMI088;
+    fp32 temperature;
+} BMI088_t;
 
-/*typedef __packed struct BMI088_RAW_DATA
+typedef __packed struct BMI088_RAW_DATA
 {
     uint8_t status;
     int16_t accel[3];
@@ -87,7 +87,7 @@ typedef struct BMI088_REAL_DATA
     fp32 temp;
     fp32 gyro[3];
     fp32 time;
-} bmi088_real_data_t;*/
+} bmi088_real_data_t;
 
 enum {
     BMI088_NO_ERROR = 0x00,
@@ -114,12 +114,16 @@ extern uint8_t BMI088_init();
 extern bool_t bmi088_accel_init(void);
 extern bool_t bmi088_gyro_init(void);
 
-extern void BMI088_read(BMI088 *BMI088);
+extern void BMI088_read(BMI088_t *BMI088);
 
-extern BMI088 BMI088;
+extern BMI088_t BMI088;
 
 extern void IMU_Temperature_Control(float temp);
 extern void IMU_Calibrate(uint8_t calibrate);
-
+extern void BMI088_read_gyro_who_am_i(void);
+extern void BMI088_read_accel_who_am_i(void);
+extern void BMI088_accel_read_over(uint8_t *rx_buf, BMI088_t *BMI088);
+extern void BMI088_gyro_read_over(uint8_t *rx_buf, BMI088_t *BMI088);
+extern void BMI088_temperature_read_over(uint8_t *rx_buf, BMI088_t *BMI088);
 #endif
 #endif
