@@ -15,13 +15,13 @@ typedef enum {
     ROBOT_INFANTRY,     // 步兵机器人 (17mm)
     ROBOT_SENTRY        // 哨兵机器人 (17mm)
 } RobotType_e;
-
+extern RobotType_e type;
 /* 步兵机器人专属：发射机构类型配置 (初始兜底用) */
 typedef enum {
     INFANTRY_HEAT_MODE_BURST = 0, // 爆发优先模式
     INFANTRY_HEAT_MODE_COOLING    // 冷却优先模式
 } InfantryHeatMode_e;
-
+extern InfantryHeatMode_e default_infantry_mode;
 /* 拨弹轮状态机 */
 typedef enum {
     HEAT_STOP = 0,       // 停机
@@ -29,6 +29,7 @@ typedef enum {
     HEAT_SUSPECT,        // 发射嫌疑
     HEAT_CONFIRM         // 确认发射
 } HeatState_e;
+
 
 /* 热量预测与校准控制结构体 */
 typedef struct {
@@ -47,6 +48,7 @@ typedef struct {
     float current_th;       // 判定“推弹”的电流阈值（如 1.4A）
     float dt;               // 控制周期 (秒)
 } HeatPredict_t;
+extern HeatPredict_t hp;
 
 /**
  * @brief  热量预测初始化

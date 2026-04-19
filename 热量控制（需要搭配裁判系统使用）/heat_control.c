@@ -1,4 +1,7 @@
-#include "Heat_Control.h"
+#include "heat_control.h"
+
+RobotType_e type;
+HeatPredict_t hp;
 
 void HeatPredict_Init(HeatPredict_t* hp, RobotType_e type, InfantryHeatMode_e default_infantry_mode, float dt, float current_th)
 {
