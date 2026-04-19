@@ -42,11 +42,8 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
   if (hcan->Instance == CAN1)
   {
     HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &rx_header_can1, rx_data_can1);
-    if (rx_header_can1.StdId == CAN_IMU_ID)
-    {
-      IMU_UpdateData(rx_data_can1);
-    }
-    else if (rx_header_can1.StdId == 0x211)
+
+    if (rx_header_can1.StdId == 0x211) //功率计ID
     {
       Powermeter_data(rx_data_can1);
     }
@@ -79,11 +76,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
   else if (hcan->Instance == CAN2)
   {
     HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &rx_header_can2, rx_data_can2);
-    if (rx_header_can2.StdId == CAN_IMU_ID)
-    {
-      IMU_UpdateData(rx_data_can2);
-    }
-    else if (rx_header_can2.StdId == 0x211)
+    if (rx_header_can2.StdId == 0x211)
     {
       Powermeter_data(rx_data_can1);
     }

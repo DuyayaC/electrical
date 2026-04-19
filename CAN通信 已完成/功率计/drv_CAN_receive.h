@@ -2,7 +2,6 @@
 #define DRV_CAN_RECEIVE_H
 
 #include "struct_typedef.h"
-#include "dm_imu.h"
 #include "can.h"
 #include "main.h"
 
