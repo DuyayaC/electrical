@@ -1,17 +1,15 @@
 #ifndef DRV_CAN_RECEIVE_H
 #define DRV_CAN_RECEIVE_H
 
-#include "struct_typedef.h"
-#include "dm_imu.h"
+#include "struct_typedef.h" 
 #include "can.h"
 #include "main.h"
-.
+
 #define CHASSIS_CAN hcan2
 #define FRICTION_CAN hcan1
 #define GIMBAL_PITCH_CAN hcan1
 #define SHOOT_CAN hcan1
 #define GIMBAL_YAW_CAN hcan2
-#define PWOER_CAN hcan2
 
 /* CAN send and receive ID */
 typedef enum
@@ -27,7 +25,6 @@ typedef enum
     CAN_TRIGGER_MOTOR_ID = 0x203,
     CAN_GIMBAL_ALL_ID = 0x1FE,
 	
-		CAN_IMU_SEND_ID = 0x05,
     CAN_IMU_RECEIVE_ID = 0x11,
 
 } can_msg_id_e __attribute__((aligned(4)));
@@ -73,9 +70,7 @@ extern void CAN_cmd_chassis_reset_ID(void);
   */
 extern void CAN_cmd_chassis(int16_t motor1, int16_t motor2, int16_t motor3, int16_t motor4);
 
-extern void CAN_cmd_friction(int16_t motor1, int16_t motor2);
-
-extern void CAN_cmd_shoot(int16_t shoot, int16_t rev);
+extern void CAN_cmd_shoot(int16_t motor1, int16_t motor2, int16_t shoot);
 
 /**
   * @brief          return the yaw 6020 motor data point
