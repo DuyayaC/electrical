@@ -176,10 +176,10 @@ void CAN_cmd_chassis(int16_t motor1, int16_t motor2, int16_t motor3, int16_t mot
 void CAN_cmd_shoot(int16_t motor1, int16_t motor2, int16_t shoot)
 {
   uint32_t send_mail_box;
-  gimbal_tx_message.StdId = 0x200;
-  gimbal_tx_message.IDE = CAN_ID_STD;
-  gimbal_tx_message.RTR = CAN_RTR_DATA;
-  gimbal_tx_message.DLC = 0x08;
+  shoot_tx_message.StdId = 0x200;
+  shoot_tx_message.IDE = CAN_ID_STD;
+  shoot_tx_message.RTR = CAN_RTR_DATA;
+  shoot_tx_message.DLC = 0x08;
 	
   shoot_can_send_data[0] = motor1 >> 8;
   shoot_can_send_data[1] = motor1;
@@ -189,7 +189,7 @@ void CAN_cmd_shoot(int16_t motor1, int16_t motor2, int16_t shoot)
   shoot_can_send_data[5] = shoot;
   shoot_can_send_data[6] = 0;
   shoot_can_send_data[7] = 0;
-  HAL_CAN_AddTxMessage(&SHOOT_CAN, &gimbal_tx_message, shoot_can_send_data, &send_mail_box);
+  HAL_CAN_AddTxMessage(&SHOOT_CAN, &shoot_tx_message, shoot_can_send_data, &send_mail_box);
 }
 
 
