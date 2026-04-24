@@ -1,4 +1,5 @@
 #include "usart.h"
+#include <string.h>
 #include <stdarg.h>
 
 #define MAX_CHANNELS 32

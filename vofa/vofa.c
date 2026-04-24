@@ -2,7 +2,7 @@
 
 static vofa_send_t vofa_send = {.tail = {0x00, 0x00, 0x80, 0x7F}};
 
-void vofa_send_data(uint8_t num, ...)
+void vofa_send_data(uint8_t num, ...) //使用示例：vofa_send_data(2, &a, &b);
 {
     if (num > MAX_CHANNELS) num = MAX_CHANNELS;
 
@@ -11,7 +11,11 @@ void vofa_send_data(uint8_t num, ...)
 
     for (uint8_t i = 0; i < num; i++) 
     {
-        vofa_send.data[i] = (float)va_arg(args, double);
+        float *ptr = va_arg(args, float*);
+        if (ptr != NULL)
+        {
+            vofa_send.data[i] = *ptr;
+        }
     }
 
     va_end(args);
