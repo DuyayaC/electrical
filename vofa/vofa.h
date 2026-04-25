@@ -1,3 +1,6 @@
+#ifndef VOFA_H
+#define VOFA_H
+
 #include "usart.h"
 #include <string.h>
 #include <stdarg.h>
@@ -11,3 +14,4 @@ typedef struct
 }vofa_send_t;
 
 void vofa_send_data(uint8_t num, ...);
+#endif
