@@ -12,11 +12,7 @@ extern CAN_HandleTypeDef hcan2;
     (ptr)->given_current = (uint16_t)((data)[4] << 8 | (data)[5]); \
     (ptr)->temperate = (data)[6];                                  \
   }
-/*
-motor data,  0:chassis motor1 3508;1:chassis motor3 3508;2:chassis motor3 3508;3:chassis motor4 3508;
-4:yaw gimbal motor 6020;5:pitch gimbal motor 6020;6:trigger motor 2006;
-*/
-// static motor_measure_t motor_chassis[7];
+
 static motor_measure_t motor_chassis_can1[7];
 static motor_measure_t motor_chassis_can2[7];
 
@@ -29,11 +25,6 @@ static uint8_t pitch_can_send_data[8];
 static CAN_TxHeaderTypeDef chassis_tx_message;
 static uint8_t chassis_can_send_data[8];
 
-/**
- * @brief          hal CAN fifo call back, receive motor data
- * @param[in]      hcan, the point to CAN handle
- * @retval         none
- */
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
   CAN_RxHeaderTypeDef rx_header_can1;
@@ -88,15 +79,6 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
   }
 }
 
-/**
- * @brief          send control current of motor (0x205, 0x206, 0x207, 0x208)
- * @param[in]      yaw: (0x205) 6020 motor control current, range [-16384,16384]
- * @param[in]      pitch: (0x206) 6020 motor control current, range [-16384,16384]
- * @param[in]      shoot: (0x207) 2006 motor control current, range [-10000,10000]
- * @param[in]      rev: (0x208) reserve motor control current
- * @retval         none
- */
-
 void CAN_cmd_pitch(int16_t pitch)
 {
   uint32_t send_mail_box;
@@ -120,12 +102,6 @@ void CAN_cmd_yaw(int16_t yaw)
   yaw_can_send_data[1] = yaw;
   HAL_CAN_AddTxMessage(&GIMBAL_YAW_CAN, &gimbal_tx_message, yaw_can_send_data, &send_mail_box);
 }
-
-/**
- * @brief          send CAN packet of ID 0x700, it will set chassis motor 3508 to quick ID setting
- * @param[in]      none
- * @retval         none
- */
 
 void CAN_cmd_chassis_reset_ID(void)
 {
@@ -193,44 +169,21 @@ void CAN_cmd_shoot(int16_t motor1, int16_t motor2, int16_t shoot)
 }
 
 
-/**
- * @brief          return the yaw 6020 motor data point
- * @param[in]      none
- * @retval         motor data point
- */
-
 const motor_measure_t *get_yaw_gimbal_motor_measure_point(void)
 {
   return &motor_chassis_can2[4];
 }
 
-/**
- * @brief          return the pitch 6020 motor data point
- * @param[in]      none
- * @retval         motor data point
- */
 const motor_measure_t *get_pitch_gimbal_motor_measure_point(void)
 {
   return &motor_chassis_can1[5];
 }
-
-/**
- * @brief          return the trigger 2006 motor data point
- * @param[in]      none
- * @retval         motor data point
- */
 
 const motor_measure_t *get_trigger_motor_measure_point(void)
 {
   return &motor_chassis_can1[2];
 }
 
-
-/**
- * @brief          return the chassis 3508 motor data point
- * @param[in]      i: motor number,range [0,3]
- * @retval         motor data point
- */
 const motor_measure_t *get_chassis_motor_measure_point(uint8_t i)
 {
   return &motor_chassis_can2[(i & 0x03)];
