@@ -4,7 +4,23 @@
   * @brief      SBUS remote control DMA + IDLE handling
   */
 
-#include "remote_control.h"
+// SBUS 通道解析宏（按你的格式）
+#define get_sbus_channel(rc_ctrl, sbus_buf)                               \
+  {                                                                       \
+    (rc_ctrl)->rc.ch[0] = ((((sbus_buf)[1] | (sbus_buf)[2] << 8) & 0x07FF) - Rocker_Mid); \
+    (rc_ctrl)->rc.ch[1] = ((((sbus_buf)[2] >> 3 | (sbus_buf)[3] << 5) & 0x07FF) - Rocker_Mid); \
+    (rc_ctrl)->rc.ch[2] = ((((sbus_buf)[3] >> 6 | (sbus_buf)[4] << 2 | (sbus_buf)[5] << 10) & 0x07FF) - Rocker_Mid); \
+    (rc_ctrl)->rc.ch[3] = ((((sbus_buf)[5] >> 1 | (sbus_buf)[6] << 7) & 0x07FF) - Rocker_Mid); \
+    (rc_ctrl)->rc.ch[4] = ((((sbus_buf)[6] >> 4 | (sbus_buf)[7] << 4) & 0x07FF) - Rocker_Mid); \
+    (rc_ctrl)->rc.ch[5] = ((((sbus_buf)[7] >> 7 | (sbus_buf)[8] << 1 | (sbus_buf)[9] << 9) & 0x07FF) - Rocker_Mid); \
+    (rc_ctrl)->rc.ch[6] = ((((sbus_buf)[9] >> 2 | (sbus_buf)[10] << 6) & 0x07FF) - Rocker_Mid) / Rocker_Delt_Range; \
+    (rc_ctrl)->rc.ch[7] = ((((sbus_buf)[10] >> 5 | (sbus_buf)[11] << 3) & 0x07FF) - Rocker_Mid) / Rocker_Delt_Range; \
+    (rc_ctrl)->rc.ch[8] = ((((sbus_buf)[12] | (sbus_buf)[13] << 8) & 0x07FF) - Rocker_Mid) / Rocker_Delt_Range; \
+    (rc_ctrl)->rc.ch[9] = ((((sbus_buf)[13] >> 3 | (sbus_buf)[14] << 5) & 0x07FF) - Rocker_Mid) / Rocker_Delt_Range; \
+  }
+
+
+#include "remote_c ontrol.h"
 #include "main.h"
 #include "usart.h"
 
