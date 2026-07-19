@@ -100,11 +100,8 @@ extern const RC_ctrl_t *get_remote_control_point(void);
   */
 //extern void sbus_to_rc(volatile const uint8_t *sbus_buf, RC_ctrl_t *rc_ctrl);
 
-/* Expose custom IRQ handler so ISR forwarder can call it */
-extern void RC_USART3_IRQHandler(void);
 
-/* Debug: IDLE interrupt counter (incremented on each RC IDLE event) */
-extern volatile uint32_t rc_idle_count;
+
 
 #endif
 

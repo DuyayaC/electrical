@@ -26,10 +26,6 @@ typedef struct
     float Integral_Error; // 累计积分值
 } PID_t;
 
-extern PID_t IMU_PID;
-extern PID_t imu;
-extern PID_t chassis[4];
-extern PID_t shooter[3];
 /* 函数声明 */
 void PID_Init(PID_t *pid, float kp, float ki, float kd, float kf, float i_max, float out_max, float dead_zone);
 void PID_Set_Values(PID_t *pid, float target, float now);
