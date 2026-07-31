@@ -1,7 +1,6 @@
 #ifndef DRV_CAN_RECEIVE_H
 #define DRV_CAN_RECEIVE_H
 
-#include "struct_typedef.h" 
 #include "can.h"
 #include "main.h"
 
@@ -10,6 +9,17 @@
 #define GIMBAL_PITCH_CAN hcan1
 #define SHOOT_CAN hcan1
 #define GIMBAL_YAW_CAN hcan2
+
+// motor data read (将电机反馈帧解析到 motor_measure_t)
+#define get_motor_measure(ptr, data)                               \
+  {                                                                \
+    (ptr)->last_ecd = (ptr)->ecd;                                  \
+    (ptr)->ecd = (uint16_t)((data)[0] << 8 | (data)[1]);           \
+    (ptr)->speed_rpm = (uint16_t)((data)[2] << 8 | (data)[3]);     \
+    (ptr)->given_current = (uint16_t)((data)[4] << 8 | (data)[5]); \
+    (ptr)->temperate = (data)[6];                                  \
+    (ptr)->error = (data)[7];                                      \
+  }
 
 /**
   * @brief          build a filter config inline for standard 11-bit ID
@@ -31,6 +41,7 @@
         .FilterFIFOAssignment = CAN_RX_FIFO0,                                              \
         .FilterBank = (bank),                                                              \
     }
+
 
 /**
   * @brief          configure and start CAN1 with user-specified filter (bank [0,13])
@@ -62,7 +73,7 @@ typedef enum
     CAN_TRIGGER_MOTOR_ID = 0x203,
     CAN_GIMBAL_ALL_ID = 0x1FE,
 
-} can_msg_id_e __attribute__((aligned(4)));
+} can_msg_id_e;
 
 //rm motor data
 typedef struct

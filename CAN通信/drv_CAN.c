@@ -16,6 +16,18 @@
  *     掩码规则：mask=0x000 全接收；mask=0x7FF 精确匹配单个 ID；
  *              中间值(如 0x7E0/0x7F8) 匹配一段连续 ID 区间。
  *
+ * [2] (方案C) 运行时设备配置表：已独立到 app_can.h / app_can.c，
+ *     需要时 #include "app_can.h"，运行时可改 .hcan 换总线，换板不用改库。
+ *
+ *     // 例：初始化里把 yaw 从 CAN2 换到 CAN1
+ *     can_dev_yaw.hcan = &hcan1;
+ *
+ *     // 例：按设备配置发送（与 CAN_cmd_* 等价，但总线可运行时切换）
+ *     CAN_dev_cmd_chassis(&can_dev_chassis, m1, m2, m3, m4);
+ *     CAN_dev_cmd_yaw(&can_dev_yaw, val);
+ *     CAN_dev_cmd_pitch(&can_dev_pitch, val);
+ *     CAN_dev_cmd_shoot(&can_dev_shoot, m1, m2, shoot);
+ *
  * ================================================================
  */
 
@@ -24,16 +36,6 @@
 
 extern CAN_HandleTypeDef hcan1;
 extern CAN_HandleTypeDef hcan2;
-// motor data read
-#define get_motor_measure(ptr, data)                               \
-  {                                                                \
-    (ptr)->last_ecd = (ptr)->ecd;                                  \
-    (ptr)->ecd = (uint16_t)((data)[0] << 8 | (data)[1]);           \
-    (ptr)->speed_rpm = (uint16_t)((data)[2] << 8 | (data)[3]);     \
-    (ptr)->given_current = (uint16_t)((data)[4] << 8 | (data)[5]); \
-    (ptr)->temperate = (data)[6];                                  \
-    (ptr)->error = (data)[7];                                      \
-  }
 
 static motor_measure_t motor_chassis_can1[7];
 static motor_measure_t motor_chassis_can2[7];
