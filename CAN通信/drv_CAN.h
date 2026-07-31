@@ -11,6 +11,43 @@
 #define SHOOT_CAN hcan1
 #define GIMBAL_YAW_CAN hcan2
 
+/**
+  * @brief          build a filter config inline for standard 11-bit ID
+  * @param[in]      id:   standard ID to accept
+  * @param[in]      mask: mask, 0x000 = accept all, 0x7FF = exact match
+  * @param[in]      bank: filter bank, CAN1 uses [0,13], CAN2 uses [14,27]
+  * @retval         CAN_FilterTypeDef compound literal, pass to can_filter_init_can1/can2
+  */
+#define CAN_FILTER_STD(id, mask, bank)                                                     \
+    (CAN_FilterTypeDef)                                                                    \
+    {                                                                                      \
+        .FilterActivation = ENABLE,                                                        \
+        .FilterMode = CAN_FILTERMODE_IDMASK,                                               \
+        .FilterScale = CAN_FILTERSCALE_32BIT,                                              \
+        .FilterIdHigh = (uint16_t)(((uint32_t)(id) << 5) & 0xFFFF),                        \
+        .FilterIdLow = 0,                                                                  \
+        .FilterMaskIdHigh = (uint16_t)(((uint32_t)(mask) << 5) & 0xFFFF),                  \
+        .FilterMaskIdLow = 0,                                                              \
+        .FilterFIFOAssignment = CAN_RX_FIFO0,                                              \
+        .FilterBank = (bank),                                                              \
+    }
+
+/**
+  * @brief          configure and start CAN1 with user-specified filter (bank [0,13])
+  * @param[in]      filter: filter config by value,
+  *                 e.g. can_filter_init_can1(CAN_FILTER_STD(0x000, 0x7FF, 0))
+  * @retval         none
+  */
+extern void can_filter_init_can1(CAN_FilterTypeDef filter);
+
+/**
+  * @brief          configure and start CAN2 with user-specified filter (bank [14,27])
+  * @param[in]      filter: filter config by value,
+  *                 e.g. can_filter_init_can2(CAN_FILTER_STD(0x201, 0x7E0, 14))
+  * @retval         none
+  */
+extern void can_filter_init_can2(CAN_FilterTypeDef filter);
+
 /* CAN send and receive ID */
 typedef enum
 {
