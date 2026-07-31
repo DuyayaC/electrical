@@ -1,37 +1,12 @@
 #include "alg_pid.h"
 
-/* --- 内部集成数学函数 (Static) --- */
-
-/**
- * @brief 求绝对值
- */
-static float PID_Math_Abs(float x)
-{
-    return (x > 0) ? x : -x;
-}
-
-/**
- * @brief 限幅函数
- */
-static void PID_Math_Constrain(float *x, float Min, float Max)
-{
-    if (*x < Min)
-    {
-        *x = Min;
-    }
-    else if (*x > Max)
-    {
-        *x = Max;
-    }
-}
-
 /* --- PID 核心功能实现 --- */
 
 /**
  * @brief PID 初始化
  */
 
- void PID_Init(PID_t *pid, float kp, float ki, float kd, float kf, float i_max, float out_max, float dead_zone)
+ void PID_Init(PID_t *pid, float kp, float ki, float kd, float kf, float i_max, float out_max, float dead_zone, bool_e derivative_first)
 {
     pid->K_P = kp;
     pid->K_I = ki;
@@ -39,8 +14,8 @@ static void PID_Math_Constrain(float *x, float Min, float Max)
     pid->K_F = kf;
     pid->I_Out_Max = i_max;
     pid->Out_Max = out_max;
-    pid->D_T = 0.001f;
     pid->Dead_Zone = dead_zone;
+    pid->Derivative_First = derivative_first;   // 微分先行：TRUE=对测量值微分，FALSE=对误差微分
     
     PID_Clear_Error(pid); 
 }
@@ -80,7 +55,7 @@ void PID_Calculate(PID_t *pid, float *output)
 
     // 计算当前误差
     error = pid->Target - pid->Now;
-    abs_error = PID_Math_Abs(error); 
+    abs_error = ABS(error); 
 
     // 判断死区
     if (abs_error < pid->Dead_Zone)
@@ -92,20 +67,23 @@ void PID_Calculate(PID_t *pid, float *output)
     // P 项计算
     p_out = pid->K_P * error;
 
-    // I 项计算 
-    float new_integral = pid->Integral_Error + pid->D_T * error;
+    // I 项计算（离散累加）
+    float new_integral = pid->Integral_Error + error;
     
     if (pid->I_Out_Max != 0.0f && pid->K_I != 0.0f)
     {
         float integral_min = -pid->I_Out_Max / pid->K_I;
         float integral_max = pid->I_Out_Max / pid->K_I;
-        PID_Math_Constrain(&new_integral, integral_min, integral_max);
+        new_integral = CLAMP(new_integral, integral_min, integral_max);
     }
     pid->Integral_Error = new_integral;
     i_out = pid->K_I * pid->Integral_Error;
 
-    // D 项计算 (标准微分)
-    d_out = pid->K_D * (error - pid->Pre_Error) / pid->D_T;
+    // D 项计算（离散差分；微分先行时对测量值微分，避免目标突变引起微分冲击）
+    if (pid->Derivative_First)
+        d_out = pid->K_D * (pid->Pre_Now - pid->Now);   // 微分先行：对测量值微分
+    else
+        d_out = pid->K_D * (error - pid->Pre_Error);    // 标准：对误差微分
 
     // F前馈计算
     f_out = (pid->Target - pid->Pre_Target) * pid->K_F;
@@ -116,7 +94,7 @@ void PID_Calculate(PID_t *pid, float *output)
     // 输出限幅
     if (pid->Out_Max != 0.0f)
     {
-        PID_Math_Constrain(output, -pid->Out_Max, pid->Out_Max);
+        *output = CLAMP(*output, -pid->Out_Max, pid->Out_Max);
     }
 
     // 更新历史状态

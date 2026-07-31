@@ -3,6 +3,8 @@
 
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>            /* memset（SMC_Clear 宏使用） */
+#include "common_function.h"   /* ABS / CLAMP 等数学宏 */
 
 #define SAMPLE_PERIOD 0.002f
 
@@ -49,7 +51,16 @@ void SMC_SetParam_Exponent(Sliding *smc, float J, float K, float c, float epsilo
 void SMC_SetParam_EISMC(Sliding *smc, float J, float K, float c1, float c2, float epsilon, float limit, float u_max, float pos_esp);
 void SMC_ErrorUpdate(Sliding *smc, float target, float pos_now, float vol_now);
 float SMC_Calculate(Sliding *smc);
-void SMC_Clear(Sliding *smc);
-void SMC_IntegralClear(Sliding *smc);
+
+/* 以下用宏实现，内联展开，减少函数调用压栈 */
+#define SMC_Clear(smc) \
+    do { \
+        memset(&(smc)->error, 0, sizeof(RError)); \
+        (smc)->u = 0; \
+        (smc)->s = 0; \
+    } while (0)
+
+#define SMC_IntegralClear(smc) \
+    do { (smc)->error.p_error_integral = 0; } while (0)
 
 #endif

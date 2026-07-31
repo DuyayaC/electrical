@@ -1,7 +1,12 @@
 #include "SMC.h"
 
-static float SMC_Signal(float s);
-static float SMC_Sat(Sliding *smc, float s);
+/* 符号函数宏 */
+#define SMC_SIGN(s)  ((s) > 0.0f ? 1.0f : ((s) < 0.0f ? -1.0f : 0.0f))
+
+/* 饱和函数宏：|s/ε| <= limit 时线性，超限输出 ±1（内联，减少函数调用压栈） */
+#define SMC_SAT(smc, s) \
+    ( ((s) >= (smc)->limit * (smc)->param.epsilon) ? 1.0f : \
+      ((s) <= -(smc)->limit * (smc)->param.epsilon) ? -1.0f : ((s) / (smc)->param.epsilon) )
 
 void SMC_Init(Sliding *smc) {
     if (!smc) return;
@@ -54,7 +59,7 @@ float SMC_Calculate(Sliding *smc) {
     float sat_s = 0;
 
     // 精度死区判断
-    if (fabsf(smc->error.p_error) < smc->error.pos_error_eps) {
+    if (ABS(smc->error.p_error) < smc->error.pos_error_eps) {
         smc->error.p_error = 0;
         smc->u = 0;
         return 0;
@@ -64,7 +69,7 @@ float SMC_Calculate(Sliding *smc) {
         case EXPONENT:
             // 滑模面 s = c*e + edot
             smc->s = smc->param.c * smc->error.p_error + smc->error.v_error;
-            sat_s = SMC_Sat(smc, smc->s);
+            sat_s = SMC_SAT(smc, smc->s);
             // 指数趋近律控制量
             u = smc->param.J * ((-smc->param.c * smc->error.v_error) 
                                - smc->param.K * smc->s 
@@ -76,7 +81,7 @@ float SMC_Calculate(Sliding *smc) {
             smc->s = smc->param.c1 * smc->error.p_error 
                      + smc->error.v_error 
                      + smc->param.c2 * smc->error.p_error_integral;
-            sat_s = SMC_Sat(smc, smc->s);
+            sat_s = SMC_SAT(smc, smc->s);
             // 控制量计算
             u = smc->param.J * ((-smc->param.c1 * smc->error.v_error) 
                                - smc->param.c2 * smc->error.p_error 
@@ -86,29 +91,9 @@ float SMC_Calculate(Sliding *smc) {
     }
 
     // 输出限幅
-    if (u > smc->u_max) u = smc->u_max;
-    else if (u < -smc->u_max) u = -smc->u_max;
+    u = CLAMP(u, -smc->u_max, smc->u_max);
 
     smc->u = u;
     return u;
 }
 
-void SMC_Clear(Sliding *smc) {
-    memset(&smc->error, 0, sizeof(RError));
-    smc->u = 0;
-    smc->s = 0;
-}
-
-void SMC_IntegralClear(Sliding *smc) {
-    smc->error.p_error_integral = 0;
-}
-
-static float SMC_Signal(float s) {
-    return (s > 0.0f) ? 1.0f : ((s < 0.0f) ? -1.0f : 0.0f);
-}
-
-static float SMC_Sat(Sliding *smc, float s) {
-    float y = s / smc->param.epsilon;
-    if (fabsf(y) <= smc->limit) return y;
-    else return SMC_Signal(y);
-}

@@ -2,6 +2,14 @@
 #define ALG_PID_H
 
 #include "stdint.h" 
+#include "common_function.h"
+
+/* 布尔枚举（TRUE/FALSE） */
+typedef enum
+{
+    FALSE = 0,
+    TRUE  = 1,
+} bool_e;
 
 /* PID 结构体定义 */
 typedef struct
@@ -13,8 +21,8 @@ typedef struct
     float K_F;          // 前馈系数
     float I_Out_Max;    // 积分限幅
     int16_t Out_Max;      // 输出限幅
-    float D_T;          // 时间片长度 (控制周期)
     float Dead_Zone;    // 死区
+    bool_e Derivative_First;   // 微分先行：TRUE=对测量值微分，FALSE=对误差微分（标准，默认）
 
     // 状态变量
     float Target;       // 目标值
@@ -27,7 +35,7 @@ typedef struct
 } PID_t;
 
 /* 函数声明 */
-void PID_Init(PID_t *pid, float kp, float ki, float kd, float kf, float i_max, float out_max, float dead_zone);
+void PID_Init(PID_t *pid, float kp, float ki, float kd, float kf, float i_max, float out_max, float dead_zone, bool_e derivative_first);
 void PID_Set_Values(PID_t *pid, float target, float now);
 void PID_Clear_Error(PID_t *pid);
 void PID_Calculate(PID_t *pid, float *output);
