@@ -1,59 +1,33 @@
 #ifndef ALG_FILTER_H
 #define ALG_FILTER_H
 
-#include "arm_math.h"
+#include <stdint.h>
 
-/*IIR 滤波器*/
+/*IIR 滤波器（一阶低通）*/
 typedef struct
 {
-    float alpha;      // 滤波系数
+    float alpha;      // 滤波系数（0~1），越大响应越快、平滑越弱
     float last_data;  // 上一次的滤波结果
+    uint8_t is_valid; // 数据有效标志
 } IIR_Filter_t;
 
 void IIR_Init(IIR_Filter_t *filter, float alpha);
-void IIR_Calculate(IIR_Filter_t *filter, float *data);
+void IIR_SetAlpha(IIR_Filter_t *filter, float alpha);
+float IIR_Calculate(IIR_Filter_t *filter, float data);
 void IIR_Clear(IIR_Filter_t *filter);
 
-/*单维卡尔曼滤波器*/
+/*FIR 滤波器（滑动平均），缓冲区由调用方提供静态数组，不使用动态内存*/
 typedef struct
 {
-    float A;  // 状态转移矩阵
-    float B;  // 控制输入矩阵
-    float H;  // 观测矩阵
-    float Q;  // 过程噪声协方差
-    float R;  // 测量噪声协方差
-    float P;  // 估计误差协方差
-    float P_predict; // 临时变量，用于计算
-    float G;   // 卡尔曼增益
-    float Out; // 滤波输出
-    float Now; // 当前测量值
-} Kalman_Filter_t;
+    float *buffer;        // 数据缓冲区（调用方提供，静态数组）
+    uint8_t buffer_len;   // 缓冲区长度
+    uint8_t buffer_index; // 当前写入索引
+    float sum;            // 窗口内数据和
+    uint8_t is_valid;     // 数据有效标志
+} FIR_Filter_t;
 
-void Kalman_Init(Kalman_Filter_t *filter, float a, float b, float h, float q, float r);
-void Kalman_Calculate(Kalman_Filter_t *filter);
-
-/*XYZ三轴卡尔曼滤波器*/ 
-typedef struct
-{
-    float A;  // 状态转移矩阵
-    float B;  // 控制输入矩阵
-    float H;  // 观测矩阵
-    
-    float P[3];  // 估计误差协方差
-    float _P[3];  // 临时变量，用于计算
-    float Q[3];  // 过程噪声协方差
-    float R[3];  // 测量噪声协方差
-    float G[3];  // 卡尔曼增益
-
-    arm_matrix_instance_f32 mat_P; // 估计误差协方差矩阵
-    arm_matrix_instance_f32 mat_Q; // 过程噪声协方差矩阵
-    arm_matrix_instance_f32 mat_R; // 测量噪声协方差矩阵
-
-    float Out[3]; // 滤波输出
-    float Now[3]; // 当前测量值
-} XYZ_Kalman_Filter_t;
-
-void XYZ_Kalman_Init(XYZ_Kalman_Filter_t *filter, float a, float b, float h);
-void XYZ_Kalman_Calculate(XYZ_Kalman_Filter_t *filter);
+void FIR_Init(FIR_Filter_t *filter, float *buffer, uint8_t buffer_len);
+float FIR_Calculate(FIR_Filter_t *filter, float data);
+void FIR_Clear(FIR_Filter_t *filter);
 
 #endif

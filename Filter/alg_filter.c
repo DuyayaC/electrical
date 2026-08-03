@@ -1,91 +1,118 @@
 #include "alg_filter.h"
 
-/*IIR 滤波器*/
+/*IIR 滤波器（一阶低通）*/
 void IIR_Init(IIR_Filter_t *filter, float alpha)
 {
+    if (filter == NULL)
+    {
+        return;
+    }
+
     filter->alpha = alpha;
     filter->last_data = 0.0f;
+    filter->is_valid = 0;
 }
 
-void IIR_Calculate(IIR_Filter_t *filter, float *data)
+void IIR_SetAlpha(IIR_Filter_t *filter, float alpha)
 {
-    *data = filter->alpha * (*data) + (1.0f - filter->alpha) * filter->last_data;
-    filter->last_data = *data;
+    if (filter == NULL)
+    {
+        return;
+    }
+
+    filter->alpha = alpha;
+}
+
+float IIR_Calculate(IIR_Filter_t *filter, float data)
+{
+    float output;
+
+    if (filter == NULL)
+    {
+        return data;
+    }
+
+    /*首次输入直接作为初值，避免开机从 0 跳变的毛刺*/
+    if (filter->is_valid == 0)
+    {
+        filter->last_data = data;
+        filter->is_valid = 1;
+        return data;
+    }
+
+    output = filter->alpha * data + (1.0f - filter->alpha) * filter->last_data;
+    filter->last_data = output;
+
+    return output;
 }
 
 void IIR_Clear(IIR_Filter_t *filter)
 {
+    if (filter == NULL)
+    {
+        return;
+    }
+
     filter->last_data = 0.0f;
+    filter->is_valid = 0;
 }
 
-/*单维卡尔曼滤波器*/
-void Kalman_Init(Kalman_Filter_t *filter, float a, float b, float h, float q, float r)
+/*FIR 滤波器（滑动平均）*/
+void FIR_Init(FIR_Filter_t *filter, float *buffer, uint8_t buffer_len)
 {
-    filter->A = a;
-    filter->B = b;
-    filter->H = h;
-    filter->Q = q;
-    filter->R = r;
-    filter->P = 1.0f; // 初始估计误差协方差
-    filter->Out = 0.0f; // 初始滤波输出
+    if (filter == NULL || buffer == NULL || buffer_len == 0)
+    {
+        return;
+    }
+
+    filter->buffer = buffer;
+    filter->buffer_len = buffer_len;
+    filter->buffer_index = 0;
+    filter->sum = 0.0f;
+    filter->is_valid = 1;
+
+    for (uint8_t i = 0; i < filter->buffer_len; i++)
+    {
+        filter->buffer[i] = 0.0f;
+    }
 }
 
-void Kalman_Calculate(Kalman_Filter_t *filter)
-{   
-    // 预测更新
-    filter->Out = filter->A * filter->Out;
-    filter->P_predict = filter->A * filter->P * filter->A + filter->Q;
-
-    // 实际更新
-    float denom = filter->H * filter->P_predict * filter->H + filter->R;
-    filter->G = filter->P_predict * filter->H / denom;
-    filter->Out = filter->Out + filter->G * (filter->Now - filter->H * filter->Out);
-    filter->P = (1.0f - filter->G * filter->H) * filter->P_predict;
-}
-
-/*XYZ三轴卡尔曼滤波器*/
-void XYZ_Kalman_Init(XYZ_Kalman_Filter_t *filter, float a, float b, float h)
+float FIR_Calculate(FIR_Filter_t *filter, float data)
 {
-    filter->A = a;
-    filter->B = b;
-    filter->H = h;
+    float output;
 
-    //初始化数组和矩阵实例
-    for (int i = 0; i < 3; i++) {
-        filter->P[i] = 1.0f; // 初始估计误差协方差
-        filter->Out[i] = 0.0f; // 初始滤波输出
+    if (filter == NULL || filter->is_valid == 0)
+    {
+        return data;
     }
 
-    // 初始化矩阵实例
-    arm_mat_init_f32(&filter->mat_P, 1, 1, filter->P);   
-    arm_mat_init_f32(&filter->mat_Q, 1, 1, filter->Q);
-    arm_mat_init_f32(&filter->mat_R, 1, 1, filter->R);
+    filter->sum -= filter->buffer[filter->buffer_index];
+    filter->buffer[filter->buffer_index] = data;
+    filter->sum += data;
+
+    filter->buffer_index++;
+    if (filter->buffer_index >= filter->buffer_len)
+    {
+        filter->buffer_index = 0;
+    }
+
+    output = filter->sum / (float)filter->buffer_len;
+
+    return output;
 }
 
-void XYZ_Kalman_Calculate(XYZ_Kalman_Filter_t *filter)
+void FIR_Clear(FIR_Filter_t *filter)
 {
-    float32_t A_squared = filter->A * filter->A;
-    float32_t temp_innovation[3];
-
-    // 1. 状态预测
-    arm_scale_f32(filter->Out, filter->A, filter->Out, 3);
-
-    // 2. 协方差预测与增益计算
-    for(int i = 0; i < 3; i++) {
-        filter->_P[i] = A_squared * filter->P[i] + filter->Q[i];
+    if (filter == NULL || filter->is_valid == 0)
+    {
+        return;
     }
-    // 3. 批量计算增益和更新输出
-    for(int i = 0; i < 3; i++) {
-        float32_t denominator = filter->H * filter->H * filter->_P[i] + filter->R[i];
-        filter->G[i] = (filter->H * filter->_P[i]) / denominator;
-    }
-    // 4. 批量更新输出和协方差
-    
-    arm_scale_f32(filter->Out, filter->H, temp_innovation, 3); // H * Out
-    arm_sub_f32(filter->Now, temp_innovation, temp_innovation, 3); // Now - H * Out
 
-    for (int i = 0; i < 3; i++) {
-        filter->Out[i] = filter->Out[i] + filter->G[i] * temp_innovation[i]; // Out + G * (Now - H * Out)
-        filter->P[i] = (1.0f - filter->G[i] * filter->H) * filter->_P[i]; // P = (1 - G * H) * P_predict
+    for (uint8_t i = 0; i < filter->buffer_len; i++)
+    {
+        filter->buffer[i] = 0.0f;
     }
+
+    filter->buffer_index = 0;
+    filter->sum = 0.0f;
 }
