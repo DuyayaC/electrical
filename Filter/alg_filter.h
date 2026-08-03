@@ -13,7 +13,7 @@ typedef struct
 
 void IIR_Init(IIR_Filter_t *filter, float alpha);
 void IIR_SetAlpha(IIR_Filter_t *filter, float alpha);
-float IIR_Calculate(IIR_Filter_t *filter, float data);
+void IIR_Calculate(IIR_Filter_t *filter, float *data);
 void IIR_Clear(IIR_Filter_t *filter);
 
 /*FIR 滤波器（滑动平均），缓冲区由调用方提供静态数组，不使用动态内存*/
@@ -27,7 +27,7 @@ typedef struct
 } FIR_Filter_t;
 
 void FIR_Init(FIR_Filter_t *filter, float *buffer, uint8_t buffer_len);
-float FIR_Calculate(FIR_Filter_t *filter, float data);
+void FIR_Calculate(FIR_Filter_t *filter, float *data);
 void FIR_Clear(FIR_Filter_t *filter);
 
 #endif

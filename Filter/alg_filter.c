@@ -23,27 +23,26 @@ void IIR_SetAlpha(IIR_Filter_t *filter, float alpha)
     filter->alpha = alpha;
 }
 
-float IIR_Calculate(IIR_Filter_t *filter, float data)
+void IIR_Calculate(IIR_Filter_t *filter, float *data)
 {
     float output;
 
-    if (filter == NULL)
+    if (filter == NULL || data == NULL)
     {
-        return data;
+        return;
     }
 
     /*首次输入直接作为初值，避免开机从 0 跳变的毛刺*/
     if (filter->is_valid == 0)
     {
-        filter->last_data = data;
+        filter->last_data = *data;
         filter->is_valid = 1;
-        return data;
+        return;
     }
 
-    output = filter->alpha * data + (1.0f - filter->alpha) * filter->last_data;
+    output = filter->alpha * (*data) + (1.0f - filter->alpha) * filter->last_data;
     filter->last_data = output;
-
-    return output;
+    *data = output;
 }
 
 void IIR_Clear(IIR_Filter_t *filter)
@@ -77,18 +76,16 @@ void FIR_Init(FIR_Filter_t *filter, float *buffer, uint8_t buffer_len)
     }
 }
 
-float FIR_Calculate(FIR_Filter_t *filter, float data)
+void FIR_Calculate(FIR_Filter_t *filter, float *data)
 {
-    float output;
-
-    if (filter == NULL || filter->is_valid == 0)
+    if (filter == NULL || data == NULL || filter->is_valid == 0)
     {
-        return data;
+        return;
     }
 
     filter->sum -= filter->buffer[filter->buffer_index];
-    filter->buffer[filter->buffer_index] = data;
-    filter->sum += data;
+    filter->buffer[filter->buffer_index] = *data;
+    filter->sum += *data;
 
     filter->buffer_index++;
     if (filter->buffer_index >= filter->buffer_len)
@@ -96,9 +93,7 @@ float FIR_Calculate(FIR_Filter_t *filter, float data)
         filter->buffer_index = 0;
     }
 
-    output = filter->sum / (float)filter->buffer_len;
-
-    return output;
+    *data = filter->sum / (float)filter->buffer_len;
 }
 
 void FIR_Clear(FIR_Filter_t *filter)
