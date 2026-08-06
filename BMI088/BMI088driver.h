@@ -4,7 +4,6 @@
 #ifndef __BSP_IMU_PWM_H
 #define __BSP_IMU_PWM_H
 
-#include "struct_typedef.h"
 #include "main.h"
 #include "alg_pid.h"
 #include "tim.h"
@@ -67,9 +66,9 @@ typedef struct
     float AccelScale;
     float TempWhenCali;
 
-    fp32 accel[3];
-    fp32 gyro[3];
-    fp32 temperature;
+    float accel[3];
+    float gyro[3];
+    float temperature;
 } BMI088_t;
 
 typedef __packed struct BMI088_RAW_DATA
@@ -83,10 +82,10 @@ typedef __packed struct BMI088_RAW_DATA
 typedef struct BMI088_REAL_DATA
 {
     uint8_t status;
-    fp32 accel[3];
-    fp32 temp;
-    fp32 gyro[3];
-    fp32 time;
+    float accel[3];
+    float temp;
+    float gyro[3];
+    float time;
 } bmi088_real_data_t;
 
 enum {
