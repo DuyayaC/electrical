@@ -761,6 +761,31 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>User/WheelLeg</GroupName>
+          <Files>
+            <File>
+              <FileName>five_bar.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\WheelLeg\five_bar.c</FilePath>
+            </File>
+            <File>
+              <FileName>wheel_leg_state_estimator.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\WheelLeg\wheel_leg_state_estimator.c</FilePath>
+            </File>
+            <File>
+              <FileName>wheel_leg_lqr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\WheelLeg\wheel_leg_lqr.c</FilePath>
+            </File>
+            <File>
+              <FileName>wheel_leg_vmc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\WheelLeg\wheel_leg_vmc.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>Task</GroupName>
           <Files>
             <File>
