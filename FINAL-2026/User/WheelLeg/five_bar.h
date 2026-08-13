@@ -20,6 +20,9 @@ typedef struct
     float min_abs_detJ;
 } FiveBarGeometry;
 
+/* Measured CAD geometry: lengths in metres, angles in radians. */
+uint8_t FiveBar_CadGeometry(FiveBarGeometry *geometry);
+
 /*
  * Solve position, velocity, Jacobian, and validity using caller-supplied
  * geometry.  The physical phi_bc relationship is deliberately not invented

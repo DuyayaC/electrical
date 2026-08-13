@@ -4,6 +4,7 @@
 
 #include "five_bar.h"
 #include "wheel_leg_lqr.h"
+#include "wheel_leg_lqr_schedule.h"
 #include "wheel_leg_state_estimator.h"
 #include "wheel_leg_vmc.h"
 
@@ -117,9 +118,40 @@ static void test_lqr_and_vmc(void)
     assert(fabsf(joint_torque_Nm[WL_JOINT_RIGHT_Q4] - 34.0f) < 0.001f);
 }
 
+static void test_cad_geometry_and_schedule(void)
+{
+    FiveBarGeometry geometry;
+    float gain[WHEEL_LEG_LQR_OUTPUT_COUNT][WHEEL_LEG_LQR_STATE_COUNT];
+    static const float l0[] = {0.10f, 0.20f, 0.30f};
+    static const float table[3][WHEEL_LEG_LQR_OUTPUT_COUNT]
+                           [WHEEL_LEG_LQR_STATE_COUNT] =
+    {
+        {{1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f},
+         {7.0f, 8.0f, 9.0f, 10.0f, 11.0f, 12.0f}},
+        {{3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f},
+         {9.0f, 10.0f, 11.0f, 12.0f, 13.0f, 14.0f}},
+        {{5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f},
+         {11.0f, 12.0f, 13.0f, 14.0f, 15.0f, 16.0f}}
+    };
+    WheelLegLqrSchedule schedule = {3u, l0, table};
+
+    assert(FiveBar_CadGeometry(&geometry) == 1u);
+    assert(fabsf(geometry.l1_m - 0.145f) < 1e-6f);
+    assert(fabsf(geometry.l2_m - 0.270f) < 1e-6f);
+    assert(fabsf(geometry.base_width_m - 0.150f) < 1e-6f);
+    assert(WheelLeg_LQR_ScheduleInterpolate(&schedule, 0.15f, gain) == 1u);
+    assert(fabsf(gain[0][0] - 2.0f) < 1e-6f);
+    assert(fabsf(gain[1][5] - 13.0f) < 1e-6f);
+    assert(WheelLeg_LQR_ScheduleInterpolate(&schedule, 0.01f, gain) == 1u);
+    assert(fabsf(gain[0][0] - 1.0f) < 1e-6f);
+    assert(WheelLeg_LQR_ScheduleInterpolate(&schedule, 0.40f, gain) == 1u);
+    assert(fabsf(gain[0][0] - 5.0f) < 1e-6f);
+}
+
 int main(void)
 {
     test_fivebar_and_estimator();
     test_lqr_and_vmc();
+    test_cad_geometry_and_schedule();
     return 0;
 }

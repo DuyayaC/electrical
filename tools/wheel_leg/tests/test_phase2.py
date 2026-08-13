@@ -15,6 +15,7 @@ def test_algorithm_chain_math():
         SRC / "five_bar.c",
         SRC / "wheel_leg_state_estimator.c",
         SRC / "wheel_leg_lqr.c",
+        SRC / "wheel_leg_lqr_schedule.c",
         SRC / "wheel_leg_vmc.c",
         TEST,
     ]
@@ -58,3 +59,26 @@ def test_python_fivebar_reference_and_virtual_work():
     tau = (J[0][0] * wrench[0] + J[1][0] * wrench[1],
            J[0][1] * wrench[0] + J[1][1] * wrench[1])
     assert abs(virtual_work_residual(J, qdot, tau, wrench)) < 1e-9
+
+
+def test_cad_lqr_schedule_generation():
+    import json
+    import subprocess
+    import sys
+
+    model = pathlib.Path(__file__).resolve().parents[1] / "cad_model.json"
+    output = BUILD / "cad_lqr_schedule.h"
+    subprocess.run([
+        sys.executable,
+        str(pathlib.Path(__file__).resolve().parents[1] / "solve_lqr_schedule.py"),
+        str(model),
+        "--output",
+        str(output),
+    ], check=True)
+    text = output.read_text(encoding="utf-8")
+    assert "#define WL_LQR_SCHEDULE_COUNT 11u" in text
+    assert text.count("f},") >= 22
+    document = json.loads(model.read_text(encoding="utf-8"))
+    samples = document["cad"]["leg_samples"]
+    for sample in samples:
+        assert abs(sample["L"] + sample["L_M"] - sample["L0"]) < 1e-6

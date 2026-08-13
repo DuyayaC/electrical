@@ -62,6 +62,26 @@ static uint8_t five_bar_geometry_valid(const FiveBarGeometry *geometry)
     return 1u;
 }
 
+uint8_t FiveBar_CadGeometry(FiveBarGeometry *geometry)
+{
+    if (geometry == 0)
+    {
+        return 0u;
+    }
+    geometry->l1_m = 0.145f;
+    geometry->l2_m = 0.270f;
+    geometry->l3_m = 0.270f;
+    geometry->l4_m = 0.145f;
+    geometry->base_width_m = 0.150f;
+    geometry->branch_sign = -1.0f;
+    geometry->finite_difference_step_rad = 0.0001f;
+    geometry->triangle_tolerance_m = 0.000001f;
+    geometry->min_length_m = 0.1042f;
+    geometry->max_length_m = 0.3672f;
+    geometry->min_abs_detJ = 0.00001f;
+    return 1u;
+}
+
 static uint8_t five_bar_position_internal(const FiveBarGeometry *geometry,
                                           float q1_rad,
                                           float q4_rad,

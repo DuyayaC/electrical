@@ -779,6 +779,11 @@
               <FilePath>..\User\WheelLeg\wheel_leg_lqr.c</FilePath>
             </File>
             <File>
+              <FileName>wheel_leg_lqr_schedule.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\WheelLeg\wheel_leg_lqr_schedule.c</FilePath>
+            </File>
+            <File>
               <FileName>wheel_leg_vmc.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\User\WheelLeg\wheel_leg_vmc.c</FilePath>
