@@ -9,9 +9,13 @@
  * 运行时可改 .hcan 换总线 -> 换板子/改接线无需改代码。
  *
  * 用法（按功能顺序）：
- *   // 1) 初始化滤波器（必须先调用，x 为 CAN 通道号）
- *   app_can1_filter_init(CAN_FILTER_STD(0x000, 0x000, 0));    // CAN1 全接收, Bank 0
- *   app_can2_filter_init(CAN_FILTER_STD(0x201, 0x7E0, 14));   // CAN2 收 0x201~0x205, Bank 14
+ *   // 1) 初始化滤波器（必须先调用；配置结构体在外面创建，can_filter_std() 填充，
+ *   //    完整流程见 app_can.c 文件头的"CAN 滤波配置使用说明"）
+ *   CAN_FilterTypeDef filter_can1, filter_can2;
+ *   can_filter_std(&filter_can1, 0x000, 0x000, 0);    // CAN1 全接收, Bank 0
+ *   can_filter_std(&filter_can2, 0x201, 0x7E0, 14);   // CAN2 收 0x201~0x205, Bank 14
+ *   app_can1_filter_init(&filter_can1);
+ *   app_can2_filter_init(&filter_can2);
  *
  *   // 2) 读取电机反馈（bus 由用户指定；该设备不在该总线时返回 NULL）
  *   const motor_measure_t *m = get_chassis_motor_measure_point(APP_CAN2, 0);
@@ -23,47 +27,7 @@
  *   app_can_cmd_shoot(&can_dev_shoot, m1, m2, shoot);
  * ============================================================== */
 
-/* ==================== 1. 宏定义 ==================== */
-
-/* 电机反馈帧解包宏（把 8 字节原始数据解析到 motor_measure_t） */
-#define get_motor_measure(ptr, data)                               \
-  {                                                                \
-    (ptr)->last_ecd = (ptr)->ecd;                                  \
-    (ptr)->ecd = (uint16_t)((data)[0] << 8 | (data)[1]);           \
-    (ptr)->speed_rpm = (uint16_t)((data)[2] << 8 | (data)[3]);     \
-    (ptr)->given_current = (uint16_t)((data)[4] << 8 | (data)[5]); \
-    (ptr)->temperate = (data)[6];                                  \
-    (ptr)->error = (data)[7];                                      \
-  }
-
-/* 滤波器配置宏（按 id/mask/bank 生成标准帧滤波器配置） */
-#define CAN_FILTER_STD(id, mask, bank)                                                     \
-    (CAN_FilterTypeDef)                                                                    \
-    {                                                                                      \
-        .FilterActivation = ENABLE,                                                        \
-        .FilterMode = CAN_FILTERMODE_IDMASK,                                               \
-        .FilterScale = CAN_FILTERSCALE_32BIT,                                              \
-        .FilterIdHigh = (uint16_t)(((uint32_t)(id) << 5) & 0xFFFF),                        \
-        .FilterIdLow = 0,                                                                  \
-        .FilterMaskIdHigh = (uint16_t)(((uint32_t)(mask) << 5) & 0xFFFF),                  \
-        .FilterMaskIdLow = 0,                                                              \
-        .FilterFIFOAssignment = CAN_RX_FIFO0,                                              \
-        .FilterBank = (bank),                                                              \
-    }
-
-/* 按设备配置发送 8 字节数据（宏实现，内联展开，无函数调用开销） */
-#define CAN_dev_send(dev, data)                                                       \
-    do {                                                                              \
-        CAN_TxHeaderTypeDef tx_msg;                                                   \
-        uint32_t send_mail_box;                                                       \
-        tx_msg.StdId = (dev)->std_id;                                                 \
-        tx_msg.IDE = CAN_ID_STD;                                                      \
-        tx_msg.RTR = CAN_RTR_DATA;                                                    \
-        tx_msg.DLC = 0x08;                                                            \
-        HAL_CAN_AddTxMessage((dev)->hcan, &tx_msg, (data), &send_mail_box);           \
-    } while (0)
-
-/* ==================== 2. 类型定义 ==================== */
+/* ==================== 1. 类型定义 ==================== */
 
 /* 电机反馈数据结构（存放解包后的 ecd / speed_rpm / given_current 等字段） */
 typedef struct
@@ -118,7 +82,7 @@ typedef struct
     uint32_t           std_id;  /* 发送标准帧 ID */
 } can_tx_device_t;
 
-/* ==================== 3. 变量声明 ==================== */
+/* ==================== 2. 变量声明 ==================== */
 
 /* 设备配置表实例（默认值见 app_can.c，运行时可重新赋值 .hcan） */
 extern can_tx_device_t can_dev_chassis;   /* 底盘 3508 四合一 */
@@ -127,21 +91,30 @@ extern can_tx_device_t can_dev_yaw;       /* yaw 6020 */
 extern can_tx_device_t can_dev_pitch;     /* pitch 6020 */
 extern can_tx_device_t can_dev_shoot;     /* 拨盘 2006 */
 
-/* ==================== 4. 函数声明 ==================== */
+/* ==================== 3. 函数声明 ==================== */
+/**
+  * @brief          生成标准帧滤波器配置（填充外部创建的结构体，不创建）
+  * @param[out]     filter: 外部创建的滤波器配置结构体指针
+  * @param[in]      id:    期望接收的标准帧 ID（如 0x201）
+  * @param[in]      mask:  掩码，位为 0 必须精确匹配，位为 1 不关心
+  * @param[in]      bank:  滤波器组编号（CAN1: 0~13, CAN2: 14~27）
+  * @retval         none
+  */
+extern void can_filter_std(CAN_FilterTypeDef *filter, uint32_t id, uint32_t mask, uint32_t bank);
 
 /**
   * @brief          (方案C) 配置并启动 CAN1（滤波器 Bank [0,13]）
-  * @param[in]      filter: 滤波器配置，可按值传入 CAN_FILTER_STD(...)
+  * @param[in]      filter: 外部创建并填充好的滤波器配置指针
   * @retval         none
   */
-extern void app_can1_filter_init(CAN_FilterTypeDef filter);
+extern void app_can1_filter_init(CAN_FilterTypeDef *filter);
 
 /**
   * @brief          (方案C) 配置并启动 CAN2（滤波器 Bank [14,27]）
-  * @param[in]      filter: 滤波器配置，可按值传入 CAN_FILTER_STD(...)
+  * @param[in]      filter: 外部创建并填充好的滤波器配置指针
   * @retval         none
   */
-extern void app_can2_filter_init(CAN_FilterTypeDef filter);
+extern void app_can2_filter_init(CAN_FilterTypeDef *filter);
 
 /**
   * @brief          (方案C) 按设备配置发送底盘四电机电流
