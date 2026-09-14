@@ -111,3 +111,4 @@ void FIR_Clear(FIR_Filter_t *filter)
     filter->buffer_index = 0;
     filter->sum = 0.0f;
 }
+//test
