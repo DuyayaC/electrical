@@ -1,7 +1,7 @@
 #ifndef ALG_FILTER_H
 #define ALG_FILTER_H
 
-#include <stdint.h>
+#include "main.h"
 
 /*IIR 滤波器（一阶低通）*/
 typedef struct
