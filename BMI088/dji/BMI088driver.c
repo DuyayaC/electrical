@@ -246,7 +246,7 @@ uint8_t BMI088_init()
     return error;
 }
 
-bool_t bmi088_accel_init(void)
+uint8_t bmi088_accel_init(void)
 {
     uint8_t res = 0;
     uint8_t write_reg_num = 0;
@@ -291,7 +291,7 @@ bool_t bmi088_accel_init(void)
     return BMI088_NO_ERROR;
 }
 
-bool_t bmi088_gyro_init(void)
+uint8_t bmi088_gyro_init(void)
 {
     uint8_t write_reg_num = 0;
     uint8_t res = 0;

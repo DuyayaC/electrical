@@ -110,8 +110,8 @@ enum {
 };
 
 extern uint8_t BMI088_init();
-extern bool_t bmi088_accel_init(void);
-extern bool_t bmi088_gyro_init(void);
+extern uint8_t bmi088_accel_init(void);
+extern uint8_t bmi088_gyro_init(void);
 
 extern void BMI088_read(BMI088_t *BMI088);
 
