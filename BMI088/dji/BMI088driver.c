@@ -242,6 +242,10 @@ uint8_t BMI088_init()
 
     error |= bmi088_accel_init();
     error |= bmi088_gyro_init();
+    if (BMI088.AccelScale == 0)
+    {
+        BMI088.AccelScale = 1.0f;
+    }
     
     return error;
 }
